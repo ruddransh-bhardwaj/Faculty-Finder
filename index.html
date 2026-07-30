@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,9 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Faculty Finder Pro - Role Selection</title>
 <style>
-:root{--p:#2563eb;--bg:#f5f7fb}
-*{box-sizing:border-box;font-family:Inter,Arial,sans-serif}
-body{margin:0;background:var(--bg);color:#222; overflow-x: hidden;}
+:root{
+  --p:#2563eb;
+  --bg:#f8fafc;
+  --card-bg:#ffffff;
+  --text-main:#0f172a;
+  --text-muted:#64748b;
+  --border-light:#e2e8f0;
+  --student-accent:#2563eb;
+  --faculty-accent:#d97706;
+}
+
+*{box-sizing:border-box;font-family:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;}
+body{margin:0;background:var(--bg);color:var(--text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased;}
 
 /* --- MAIN APP HEADER (Hidden on Portal) --- */
 #mainAppHeader {display:none; justify-content:space-between; align-items:center; padding:18px 8%; background:#fff; position:sticky; top:0; box-shadow:0 2px 10px rgba(0,0,0,.05); z-index: 100;}
@@ -22,21 +31,146 @@ button:hover{opacity:0.9;}
 .view-section { display: none; }
 .active-view { display: block; }
 
-/* ================= CLEAN PORTAL STYLES ================= */
-.portal-centered { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6f9; text-align: center; padding: 20px; }
-.portal-centered h1 { font-size: 32px; color: #1b5b97; margin-bottom: 10px; font-family: Inter, Arial, sans-serif; font-weight: bold;}
-.portal-centered p { color: #666; margin-bottom: 40px; }
+/* ================= ENHANCED MINIMALIST PORTAL STYLES ================= */
+.portal-centered { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    min-height: 100vh; 
+    background: radial-gradient(circle at 50% 10%, #f1f5f9 0%, #f8fafc 100%); 
+    text-align: center; 
+    padding: 30px 20px; 
+}
 
-.vit-cards-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
-.vit-card { background: white; width: 280px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); padding: 25px; text-align: center; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.3s; }
-.vit-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
-.vit-card-icon { font-size: 45px; }
-.vit-card-content { text-align: right; }
-.vit-card-content h3 { margin: 0 0 12px 0; font-size: 20px; }
-.vit-btn { padding: 8px 18px; border-radius: 4px; color: white; border: none; cursor: pointer; font-size: 16px; font-weight: bold;}
+.portal-container {
+    max-width: 680px;
+    width: 100%;
+    padding: 40px 30px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+}
 
-.card-student { border-top: 4px solid #007bff; } .card-student h3 { color: #007bff; } .card-student .vit-btn { background: #007bff; }
-.card-employee { border-top: 4px solid #d4a017; } .card-employee h3 { color: #d4a017; } .card-employee .vit-btn { background: #d4a017; }
+.portal-header-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #eff6ff;
+    color: var(--p);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+}
+
+.portal-centered h1 { 
+    font-size: 36px; 
+    color: var(--text-main); 
+    margin: 0 0 12px 0; 
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+}
+
+.portal-centered p { 
+    color: var(--text-muted); 
+    font-size: 16px;
+    margin: 0 auto 36px auto; 
+    max-width: 440px;
+    line-height: 1.5;
+}
+
+.vit-cards-row { 
+    display: flex; 
+    justify-content: center; 
+    gap: 20px; 
+    flex-wrap: wrap; 
+    width: 100%;
+}
+
+.vit-card { 
+    background: var(--card-bg); 
+    flex: 1;
+    min-width: 240px;
+    max-width: 280px;
+    border-radius: 16px; 
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
+    padding: 24px; 
+    text-align: left; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    cursor: pointer; 
+    transition: all 0.25s ease-in-out; 
+    position: relative;
+    overflow: hidden;
+}
+
+.vit-card:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08); 
+    border-color: rgba(0,0,0,0.1);
+}
+
+.vit-card-icon { 
+    font-size: 38px; 
+    background: #f8fafc;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.vit-card-content { 
+    text-align: right; 
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.vit-card-content h3 { 
+    margin: 0; 
+    font-size: 18px; 
+    font-weight: 700;
+}
+
+.vit-card-content span {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.vit-btn { 
+    padding: 6px 14px; 
+    border-radius: 8px; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    font-size: 14px; 
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s;
+}
+
+.vit-card:hover .vit-btn {
+    transform: translateX(2px);
+}
+
+.card-student h3 { color: var(--student-accent); } 
+.card-student .vit-btn { background: var(--student-accent); }
+
+.card-employee h3 { color: var(--faculty-accent); } 
+.card-employee .vit-btn { background: var(--faculty-accent); }
 
 /* Hero & General */
 .hero{display:grid;grid-template-columns:1.2fr .8fr;padding:70px 8%;gap:40px;background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff}
@@ -44,7 +178,7 @@ button:hover{opacity:0.9;}
 .hero-card,.card,.panel{background:#fff;color:#222;border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
 .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
 .content-section{padding:60px 8%}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
 
 /* Search Bar */
 .search-wrapper { max-width: 600px; margin: 0 auto 30px auto; text-align: center; }
@@ -84,6 +218,12 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 .status-rejected { background: #fee2e2; color: #991b1b; }
 .fac-actions button { margin-left: 5px; padding: 6px 12px; font-size: 12px;}
 
+/* Live Location & Status Badges */
+.status-badge-inline { padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
+.badge-available { background: #dcfce7; color: #15803d; }
+.badge-inclass { background: #fee2e2; color: #b91c1c; }
+.location-tag { background: #f1f5f9; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #334155; margin: 8px 0; font-weight: 600; border: 1px solid #e2e8f0; }
+
 /* Login Portal */
 .login-container { max-width: 400px; margin: 80px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
 .login-container h2 { text-align: center; margin-top: 0; color: var(--p); }
@@ -96,22 +236,27 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 <!-- ================= 1. FRONT PAGE PORTAL VIEW ================= -->
 <div id="portalView" class="view-section active-view">
     <div class="portal-centered">
-        <h1>🎓 Faculty Finder Pro</h1>
-        <p>A smart platform for seamless academic scheduling and appointments.</p>
-        
-        <div class="vit-cards-row">
-            <div class="vit-card card-student" onclick="goToLogin('Student')">
-                <div class="vit-card-icon">👨‍🎓</div>
-                <div class="vit-card-content">
-                    <h3>Student</h3>
-                    <button class="vit-btn">⮞</button>
+        <div class="portal-container">
+            <span class="portal-header-badge">Academic Scheduling Portal</span>
+            <h1>Faculty Finder Pro</h1>
+            <p>Select your portal to manage availability or schedule mutual free appointments.</p>
+            
+            <div class="vit-cards-row">
+                <div class="vit-card card-student" onclick="goToLogin('Student')">
+                    <div class="vit-card-icon">👨‍🎓</div>
+                    <div class="vit-card-content">
+                        <h3>Student</h3>
+                        <span>Find & Book</span>
+                        <button class="vit-btn">Continue &rarr;</button>
+                    </div>
                 </div>
-            </div>
-            <div class="vit-card card-employee" onclick="goToLogin('Faculty')">
-                <div class="vit-card-icon">👨‍🏫</div>
-                <div class="vit-card-content">
-                    <h3>Faculty</h3>
-                    <button class="vit-btn">⮞</button>
+                <div class="vit-card card-employee" onclick="goToLogin('Faculty')">
+                    <div class="vit-card-icon">👨‍🏫</div>
+                    <div class="vit-card-content">
+                        <h3>Faculty</h3>
+                        <span>Manage Schedule</span>
+                        <button class="vit-btn">Continue &rarr;</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,9 +267,9 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 <header id="mainAppHeader">
     <div class="logo" onclick="showView('homeView')" style="cursor:pointer; font-size:1.2rem; font-weight:bold;">🎓 Faculty Finder</div>
     <nav id="mainNav">
-        <a onclick="showView('homeView')">Home</a>
+        <a id="navHomeLink" onclick="showView('homeView')">Home</a>
         <a onclick="showView('portalView')">Main Portal</a>
-        <a onclick="showView('homeView'); scrollToSearch();">Search</a>
+        <a id="navSearchLink" onclick="showView('homeView'); scrollToSearch();">Search</a>
         <button class="btn-primary" id="loginBtn" onclick="showView('dashboardView')">My Dashboard</button>
     </nav>
 </header>
@@ -142,7 +287,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
             </select>
             
             <label>Registration / Employee ID</label>
-            <input type="text" id="regNo" placeholder="e.g. 24BCE10011" required>
+            <input type="text" id="regNo" placeholder="e.g. EMP001 (Faculty) or 24BCE10011 (Student)" required>
             
             <label>Full Name</label>
             <input type="text" id="userName" placeholder="Your Name" required>
@@ -152,7 +297,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
     </div>
 </div>
 
-<!-- ================= 3. HOME / SEARCH VIEW ================= -->
+<!-- ================= 3. HOME / SEARCH VIEW (For Students Only) ================= -->
 <div id="homeView" class="view-section">
     <section class="hero">
         <div>
@@ -167,7 +312,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
             <h3>System Status</h3>
             <div class="row"><span>📄 Sync Matrix</span><span class="green">Active</span></div>
             <div class="row"><span>📅 Live Override</span><span class="green">Active</span></div>
-            <div class="row"><span>👨‍🏫 Dr. Anjali Sharma</span><span class="green">Free 2:00 PM</span></div>
+            <div class="row"><span>📍 Live Location Sync</span><span class="green">Active</span></div>
         </div>
     </section>
 
@@ -193,6 +338,11 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
                 <input id="facultyName" placeholder="Search and select a faculty first..." readonly style="background:#f1f5f9;">
                 <input type="hidden" id="facultyId"> 
                 
+                <!-- Live Location Tag on Booking Panel -->
+                <div id="selectedFacultyLocationBox" class="location-tag" style="display:none; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; margin-bottom:15px;">
+                    📍 <strong>Live Location:</strong> <span id="selectedFacultyLocationText">-</span>
+                </div>
+
                 <div class="highlight-slot" id="smartMatchBox" style="display:none;">
                     <h3 style="margin-top:0; color:#b45309;">✨ Nearest Mutual Free Slot Found!</h3>
                     <p id="matchDetails" style="font-weight:bold; margin-bottom:5px;"></p>
@@ -222,8 +372,8 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
                 <h3>Smart Booking Workflow</h3>
                 <ol>
                     <li>Students upload schedule. Faculty updates override slots.</li>
-                    <li>Search for Faculty & Click "Find Mutual Free Time".</li>
-                    <li>System compares both live schedules instantly.</li>
+                    <li>Search for Faculty & Check Live Location.</li>
+                    <li>Click "Find Mutual Free Time" to compare schedules.</li>
                     <li>Submit Request.</li>
                     <li>Faculty reviews and Approves from Dashboard.</li>
                 </ol>
@@ -238,6 +388,17 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
         <div>
             <h2 id="userNameDisplay">Welcome, User</h2>
             <p id="userRoleDisplay" style="margin:5px 0 0 0; color:#666;">Role: Unknown | ID: XXXX</p>
+            
+            <!-- Live Location Toggle Feature for Faculty -->
+            <div id="facultyStatusControl" style="display:none; margin-top:12px;">
+                <p style="margin:0 0 6px 0; font-size:13px; font-weight:bold;">📍 Live Location & Status Control:</p>
+                <button class="btn-primary" onclick="toggleFacultyStatus()" id="statusToggleBtn" style="font-size:13px; padding:6px 14px; background:#16a34a;">
+                    Set Status: Available
+                </button>
+                <span id="facultyCurrentLocLabel" style="font-size:13px; margin-left:10px; font-weight:600; color:#334155;">
+                    Current Location: Cabin A-102
+                </span>
+            </div>
         </div>
         <button class="btn-danger" onclick="logout()">Logout</button>
     </div>
@@ -248,8 +409,22 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
         <div id="appointmentsSection" style="margin-bottom: 40px;">
             <h2 id="apptHeader">My Appointments</h2>
             <p id="apptSub" style="color:#666; font-size:14px;">Track your booking statuses here.</p>
-            <div id="appointmentsList">
-                <!-- Injected via JS -->
+            
+            <!-- Faculty View: Separate Pending and Scheduled Requests -->
+            <div id="facultyApptContainer" style="display:none;">
+                <div style="margin-bottom:25px;">
+                    <h3 style="color:#b45309; font-size:18px; margin-bottom:10px;">⏳ Pending Approval Requests</h3>
+                    <div id="pendingList"></div>
+                </div>
+                <div>
+                    <h3 style="color:#15803d; font-size:18px; margin-bottom:10px;">📅 Scheduled / Confirmed Meetings</h3>
+                    <div id="scheduledList"></div>
+                </div>
+            </div>
+
+            <!-- Student View Container -->
+            <div id="studentApptContainer">
+                <div id="appointmentsList"></div>
             </div>
         </div>
 
@@ -332,10 +507,11 @@ function initMockDB() {
     }
     if (!db.appointments) db.appointments = [];
 
-    // Pre-feed Sample Faculty Members with VIT Bhopal Matrix
+    // Pre-feed Sample Faculty Members with Live Locations & Status
     if (!db['EMP001']) {
         db['EMP001'] = {
-            id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', room: 'C-204',
+            id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', 
+            cabin: 'Cabin A-102', location: 'Block A • Room 204', status: 'In Class',
             schedule: {
                 "Monday": ["CSE1001", "Free", "Free", "Lunch", "CSE2005", "Free", "Research", "Free"],
                 "Tuesday": ["Free", "CSE1001", "Meeting", "Lunch", "Free", "CSE3002", "CSE3002", "Free"],
@@ -349,7 +525,8 @@ function initMockDB() {
 
     if (!db['EMP002']) {
         db['EMP002'] = {
-            id: 'EMP002', name: 'Dr. Rajesh Kumar', role: 'Faculty', dept: 'Information Technology', room: 'AB1-302',
+            id: 'EMP002', name: 'Dr. Rajesh Kumar', role: 'Faculty', dept: 'Information Technology', 
+            cabin: 'Cabin B-205', location: 'Block B • Room 118', status: 'Available',
             schedule: {
                 "Monday": ["Free", "IT2004", "Free", "Lunch", "Meeting", "Free", "Free", "Free"],
                 "Tuesday": ["IT1002", "Free", "Free", "Lunch", "IT2004", "Free", "Research", "Free"],
@@ -357,20 +534,6 @@ function initMockDB() {
                 "Thursday": ["Free", "Free", "IT2004", "Lunch", "IT1002", "Free", "Free", "Free"],
                 "Friday": ["Research", "Free", "Free", "Lunch", "Free", "IT2004", "Free", "Free"],
                 "Saturday": ["Free", "IT2004", "Free", "Lunch", "Free", "Free", "Free", "Free"]
-            }
-        };
-    }
-
-    if (!db['EMP003']) {
-        db['EMP003'] = {
-            id: 'EMP003', name: 'Dr. Priya Nair', role: 'Faculty', dept: 'Electronics & Comm.', room: 'TT-512',
-            schedule: {
-                "Monday": ["ECE3001", "ECE3001", "Free", "Lunch", "Free", "Free", "Meeting", "Free"],
-                "Tuesday": ["Free", "Free", "ECE3001", "Lunch", "ECE2002", "Free", "Free", "Free"],
-                "Wednesday": ["Free", "ECE2002", "Free", "Lunch", "Free", "ECE3001", "Free", "Free"],
-                "Thursday": ["Meeting", "Free", "Free", "Lunch", "Free", "Free", "Research", "Free"],
-                "Friday": ["Free", "ECE3001", "Free", "Lunch", "ECE2002", "Free", "Free", "Free"],
-                "Saturday": ["Free", "Free", "ECE3001", "Lunch", "Free", "Free", "Free", "Free"]
             }
         };
     }
@@ -385,7 +548,11 @@ function checkActiveSession() {
         try {
             currentUser = JSON.parse(savedSession);
             setupDashboardUI(); 
-            showView('homeView'); 
+            if(currentUser.role === 'Faculty') {
+                showView('dashboardView');
+            } else {
+                showView('homeView');
+            }
         } catch(e) {
             localStorage.removeItem('activeSession');
             showView('portalView');
@@ -431,8 +598,13 @@ function processLogin(event) {
     localStorage.setItem('activeSession', JSON.stringify(currentUser)); 
     
     setupDashboardUI();
-    searchFaculty();
-    showView('homeView'); 
+    
+    if (role === 'Faculty') {
+        showView('dashboardView'); // Directly go to Dashboard for Faculty
+    } else {
+        searchFaculty();
+        showView('homeView');
+    }
 }
 
 function logout() {
@@ -454,75 +626,82 @@ function setupDashboardUI() {
     const facultyText = document.getElementById('facultyScheduleText');
     const apptHeader = document.getElementById('apptHeader');
     const apptSub = document.getElementById('apptSub');
+    const statusControl = document.getElementById('facultyStatusControl');
+    
+    const navHome = document.getElementById('navHomeLink');
+    const navSearch = document.getElementById('navSearchLink');
 
     if (currentUser.role === 'Student') {
         studentUpload.style.display = 'block';
         facultyText.style.display = 'none';
+        statusControl.style.display = 'none';
+        
+        if(navHome) navHome.style.display = 'inline';
+        if(navSearch) navSearch.style.display = 'inline';
+
+        document.getElementById('studentApptContainer').style.display = 'block';
+        document.getElementById('facultyApptContainer').style.display = 'none';
+
         apptHeader.textContent = 'My Booking History';
         apptSub.textContent = 'Track the status of appointments you requested.';
-    } else { // Faculty
+    } else { // Faculty Portal Config
         studentUpload.style.display = 'none';
         facultyText.style.display = 'block';
-        apptHeader.textContent = 'Incoming Student Requests';
-        apptSub.textContent = 'Review and manage your pending appointments.';
+        statusControl.style.display = 'block';
+
+        // Hide Search and Home options for Faculty to keep simple portal
+        if(navHome) navHome.style.display = 'none';
+        if(navSearch) navSearch.style.display = 'none';
+
+        document.getElementById('studentApptContainer').style.display = 'none';
+        document.getElementById('facultyApptContainer').style.display = 'block';
+
+        apptHeader.textContent = 'Appointments & Requests Dashboard';
+        apptSub.textContent = 'Manage incoming pending requests and view scheduled meetings.';
+        updateFacultyStatusUI();
     }
 }
 
-// --- APPOINTMENTS LOGIC ---
-function bookAppointment() {
-    if(!currentUser || currentUser.role !== 'Student') {
-        alert("Only registered students can book appointments!");
-        return;
+// --- LIVE LOCATION & STATUS CONTROLLER ---
+function toggleFacultyStatus() {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    if (db[currentUser.id]) {
+        let fac = db[currentUser.id];
+        fac.status = (fac.status === 'Available') ? 'In Class' : 'Available';
+        localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+        updateFacultyStatusUI();
     }
-    
-    const faculty = document.getElementById('facultyName').value;
-    const facId = document.getElementById('facultyId').value;
-    const slot = document.getElementById('timeSlotDropdown').value;
-    const purpose = document.getElementById('bookingPurpose').value;
-    const message = document.getElementById('bookingMessage').value;
-    
-    if(!faculty || !facId) { alert("Please search and select a faculty member first!"); return; }
-    if(!slot || slot.includes("run Smart Match") || slot.includes("No overlapping")) {
-        alert("Please run Smart Match and select a valid mutual time slot!");
-        return;
-    }
-
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || { appointments: [] };
-    if(!db.appointments) db.appointments = [];
-
-    const newAppt = {
-        id: 'APT' + Date.now(),
-        studentId: currentUser.id,
-        studentName: currentUser.name,
-        facultyId: facId,
-        facultyName: faculty,
-        timeSlot: slot,
-        purpose: purpose,
-        message: message,
-        status: 'Pending'
-    };
-    
-    db.appointments.push(newAppt);
-    localStorage.setItem('facultyFinderDB', JSON.stringify(db));
-    
-    alert(`✅ Request sent to ${faculty}!\nSlot: ${slot}\nYou can track the status in your Dashboard.`);
-    
-    // Reset form
-    document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Please run Smart Match first --</option>';
-    document.getElementById('smartMatchBox').style.display = 'none';
-    document.getElementById('bookingMessage').value = '';
 }
 
+function updateFacultyStatusUI() {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    let fac = db[currentUser.id];
+    if (fac) {
+        const btn = document.getElementById('statusToggleBtn');
+        const label = document.getElementById('facultyCurrentLocLabel');
+        const currentLiveLoc = (fac.status === 'In Class') ? `${fac.location || 'Block A • Room 204'} (In Class)` : `${fac.cabin || 'Cabin'} (Available)`;
+
+        if (fac.status === 'Available') {
+            btn.textContent = "Switch to: In Class";
+            btn.style.background = "#dc2626";
+            label.innerHTML = `Current Location: 🟢 <strong>${currentLiveLoc}</strong>`;
+        } else {
+            btn.textContent = "Switch to: Available";
+            btn.style.background = "#16a34a";
+            label.innerHTML = `Current Location: 🔴 <strong>${currentLiveLoc}</strong>`;
+        }
+    }
+}
+
+// --- APPOINTMENTS & SCHEDULED REQUESTS LOGIC ---
 function renderAppointments() {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     let apps = db.appointments || [];
-    let container = document.getElementById('appointmentsList');
-    container.innerHTML = '';
-
-    let myApps = [];
 
     if (currentUser.role === 'Student') {
-        myApps = apps.filter(a => a.studentId === currentUser.id);
+        let container = document.getElementById('appointmentsList');
+        container.innerHTML = '';
+        let myApps = apps.filter(a => a.studentId === currentUser.id);
         
         if(myApps.length === 0) {
             container.innerHTML = '<p style="color:#666;">You have not made any booking requests yet.</p>';
@@ -531,11 +710,7 @@ function renderAppointments() {
 
         myApps.slice().reverse().forEach(app => {
             let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            
-            let downloadBtn = '';
-            if(app.status === 'Approved') {
-                downloadBtn = `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>`;
-            }
+            let downloadBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
 
             container.innerHTML += `
                 <div class="appt-card">
@@ -552,42 +727,63 @@ function renderAppointments() {
                 </div>
             `;
         });
-    } else { // Faculty
-        myApps = apps.filter(a => a.facultyId === currentUser.id);
+    } else { // FACULTY PORTAL (Pending vs Scheduled Requests)
+        let pendingContainer = document.getElementById('pendingList');
+        let scheduledContainer = document.getElementById('scheduledList');
         
-        if(myApps.length === 0) {
-            container.innerHTML = '<p style="color:#666;">No incoming requests at the moment.</p>';
-            return;
+        pendingContainer.innerHTML = '';
+        scheduledContainer.innerHTML = '';
+
+        let facApps = apps.filter(a => a.facultyId === currentUser.id);
+
+        let pendingApps = facApps.filter(a => a.status === 'Pending');
+        let scheduledApps = facApps.filter(a => a.status === 'Approved' || a.status === 'Rejected');
+
+        // Render Pending Requests
+        if (pendingApps.length === 0) {
+            pendingContainer.innerHTML = '<p style="color:#666; font-size:13px;">No pending requests right now.</p>';
+        } else {
+            pendingApps.slice().reverse().forEach(app => {
+                pendingContainer.innerHTML += `
+                    <div class="appt-card" style="border-left-color: #f59e0b;">
+                        <div class="appt-info">
+                            <h4>Request from ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
+                            <p><strong>Requested Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                            <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
+                            ${app.message ? `<p><em>"${escapeHTML(app.message)}"</em></p>` : ''}
+                        </div>
+                        <div class="fac-actions" style="display:flex; align-items:center; gap:8px;">
+                            <button class="btn-success" onclick="updateApptStatus('${app.id}', 'Approved')">Accept</button>
+                            <button class="btn-danger" onclick="updateApptStatus('${app.id}', 'Rejected')">Decline</button>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
-        myApps.slice().reverse().forEach(app => {
-            let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            
-            let actionButtons = '';
-            if(app.status === 'Pending') {
-                actionButtons = `
-                    <button class="btn-success" onclick="updateApptStatus('${app.id}', 'Approved')">Accept</button>
-                    <button class="btn-danger" onclick="updateApptStatus('${app.id}', 'Rejected')">Decline</button>
-                `;
-            } else if(app.status === 'Approved') {
-                actionButtons = `<button class="btn-primary" style="font-size:12px; padding:5px 10px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>`;
-            }
+        // Render Scheduled/Confirmed Requests
+        if (scheduledApps.length === 0) {
+            scheduledContainer.innerHTML = '<p style="color:#666; font-size:13px;">No scheduled meetings yet.</p>';
+        } else {
+            scheduledApps.slice().reverse().forEach(app => {
+                let badgeClass = (app.status === 'Approved') ? 'status-approved' : 'status-rejected';
+                let calBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
 
-            container.innerHTML += `
-                <div class="appt-card">
-                    <div class="appt-info">
-                        <h4>Request from ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
-                        <p><strong>Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
-                        <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
-                        ${app.message ? `<p><em>"${escapeHTML(app.message)}"</em></p>` : ''}
+                scheduledContainer.innerHTML += `
+                    <div class="appt-card" style="border-left-color: ${app.status === 'Approved' ? '#16a34a' : '#dc2626'};">
+                        <div class="appt-info">
+                            <h4>Meeting with ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
+                            <p><strong>Scheduled Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                            <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
+                            ${calBtn}
+                        </div>
                     </div>
-                    <div class="fac-actions" style="display:flex; align-items:center; gap:8px;">
-                        <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
-                        ${actionButtons}
-                    </div>
-                </div>
-            `;
-        });
+                `;
+            });
+        }
     }
 }
 
@@ -734,7 +930,7 @@ function clearSchedule() {
     }
 }
 
-// --- SEARCH & SMART MATCHING ---
+// --- SEARCH & SMART MATCHING (Students View Only) ---
 function searchFaculty() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('searchResults');
@@ -749,7 +945,7 @@ function searchFaculty() {
             const fac = db[key];
             const nameMatch = fac.name && fac.name.toLowerCase().includes(query);
             const deptMatch = fac.dept && fac.dept.toLowerCase().includes(query);
-            const roomMatch = fac.room && fac.room.toLowerCase().includes(query);
+            const roomMatch = fac.cabin && fac.cabin.toLowerCase().includes(query);
             const idMatch = fac.id && fac.id.toLowerCase().includes(query);
 
             if(query === '' || nameMatch || deptMatch || roomMatch || idMatch) {
@@ -764,15 +960,30 @@ function searchFaculty() {
     }
 
     matches.forEach(teacher => {
+        const isAvailable = (teacher.status === 'Available');
+        
+        const liveLocDisplay = isAvailable 
+            ? `${teacher.cabin || 'Cabin'} (Available)` 
+            : `${teacher.location || 'Block A • Room 204'} (In Class)`;
+
+        const badgeClass = isAvailable ? 'badge-available' : 'badge-inclass';
+        const badgeText = isAvailable ? '🟢 Available' : '🔴 In Class';
+
         const card = document.createElement('div');
         card.className = 'card profile';
         card.innerHTML = `
-            <h3 style="margin-top: 0;">👩‍🏫 ${escapeHTML(teacher.name)}</h3>
-            <p style="margin: 4px 0; font-size: 14px;"><strong>ID:</strong> ${escapeHTML(teacher.id)}</p>
-            <p style="margin: 4px 0; font-size: 14px;"><strong>Dept:</strong> ${escapeHTML(teacher.dept || 'Academic')}</p>
-            <p style="margin: 4px 0; font-size: 14px;"><strong>Cabin:</strong> ${escapeHTML(teacher.room || 'Main Block')}</p>
-            <p class="green" style="margin: 12px 0;">Live Override Active</p>
-            <button onclick="fillFaculty('${escapeHTML(teacher.name)}', '${escapeHTML(teacher.id)}')">Select for Booking</button>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h3 style="margin-top: 0;">👩‍🏫 ${escapeHTML(teacher.name)}</h3>
+                <span class="status-badge-inline ${badgeClass}">${badgeText}</span>
+            </div>
+            <p style="margin: 4px 0; font-size: 13px;"><strong>ID:</strong> ${escapeHTML(teacher.id)}</p>
+            <p style="margin: 4px 0; font-size: 13px;"><strong>Dept:</strong> ${escapeHTML(teacher.dept || 'Academic')}</p>
+            
+            <div class="location-tag">
+                📍 <strong>Live Location:</strong> ${escapeHTML(liveLocDisplay)}
+            </div>
+
+            <button style="margin-top:10px; width:100%;" onclick="fillFaculty('${escapeHTML(teacher.name)}', '${escapeHTML(teacher.id)}', '${escapeHTML(liveLocDisplay)}')">Select for Booking</button>
         `;
         resultsContainer.appendChild(card);
     });
@@ -788,9 +999,17 @@ function scrollToBook(){
     if(el) el.scrollIntoView({behavior:'smooth'}); 
 }
 
-function fillFaculty(name, id){
+function fillFaculty(name, id, liveLoc){
     document.getElementById('facultyName').value = name;
     document.getElementById('facultyId').value = id;
+    
+    const locBox = document.getElementById('selectedFacultyLocationBox');
+    const locText = document.getElementById('selectedFacultyLocationText');
+    if(locBox && locText) {
+        locText.textContent = liveLoc || 'Cabin';
+        locBox.style.display = 'block';
+    }
+
     document.getElementById('findSlotBtn').style.display = 'block';
     document.getElementById('smartMatchBox').style.display = 'none'; 
     document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Click Find Mutual Free Time --</option>';
@@ -829,7 +1048,6 @@ function findMutualSlots() {
     const facultySchedule = facultyObj.schedule || {};
     const appointments = db.appointments || [];
 
-    // Lock out slots already approved for this faculty
     const bookedSlots = new Set();
     appointments.forEach(app => {
         if(app.facultyId === facId && app.status === 'Approved') {
@@ -883,4 +1101,3 @@ function findMutualSlots() {
 </script>
 </body>
 </html>
-```
