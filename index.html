@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Faculty Finder Pro - Role Selection</title>
+<title>Faculty Finder Pro - FFCS Edition</title>
+
+<!-- Tesseract.js OCR Engine -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 <style>
 :root{
   --p:#2563eb;
@@ -19,9 +23,9 @@
 *{box-sizing:border-box;font-family:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;}
 body{margin:0;background:var(--bg);color:var(--text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased;}
 
-/* --- MAIN APP HEADER (Hidden on Portal) --- */
+/* --- MAIN APP HEADER --- */
 #mainAppHeader {display:none; justify-content:space-between; align-items:center; padding:18px 8%; background:#fff; position:sticky; top:0; box-shadow:0 2px 10px rgba(0,0,0,.05); z-index: 100;}
-nav{display:flex;gap:18px;align-items:center}nav a{text-decoration:none;color:#444; cursor:pointer;}
+nav{display:flex;gap:18px;align-items:center}nav a{text-decoration:none;color:#444; cursor:pointer; font-weight: 500;}
 .btn-primary,button{background:var(--p);color:#fff;border:none;padding:11px 18px;border-radius:10px;cursor:pointer; font-weight:600; transition:0.2s;}
 button:hover{opacity:0.9;}
 .btn-danger{background:#dc2626;}
@@ -31,215 +35,98 @@ button:hover{opacity:0.9;}
 .view-section { display: none; }
 .active-view { display: block; }
 
-/* ================= ENHANCED MINIMALIST PORTAL STYLES ================= */
-.portal-centered { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    min-height: 100vh; 
-    background: radial-gradient(circle at 50% 10%, #f1f5f9 0%, #f8fafc 100%); 
-    text-align: center; 
-    padding: 30px 20px; 
-}
+/* ================= PORTAL STYLES ================= */
+.portal-centered { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(circle at 50% 10%, #f1f5f9 0%, #f8fafc 100%); text-align: center; padding: 30px 20px; }
+.portal-container { max-width: 680px; width: 100%; padding: 40px 30px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 24px; box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05); }
+.portal-header-badge { display: inline-block; padding: 6px 14px; background: #eff6ff; color: var(--p); font-size: 13px; font-weight: 600; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.3px; }
+.portal-centered h1 { font-size: 36px; color: var(--text-main); margin: 0 0 12px 0; font-weight: 800; letter-spacing: -0.8px; }
+.portal-centered p { color: var(--text-muted); font-size: 16px; margin: 0 auto 36px auto; max-width: 440px; line-height: 1.5; }
+.vit-cards-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; width: 100%; }
+.vit-card { background: var(--card-bg); flex: 1; min-width: 240px; max-width: 280px; border-radius: 16px; border: 1px solid var(--border-light); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); padding: 24px; text-align: left; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.25s ease-in-out; }
+.vit-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08); border-color: rgba(0,0,0,0.1); }
+.vit-card-icon { font-size: 38px; background: #f8fafc; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+.vit-card-content { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.vit-card-content h3 { margin: 0; font-size: 18px; font-weight: 700; }
+.vit-card-content span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.vit-btn { padding: 6px 14px; border-radius: 8px; color: white; border: none; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: transform 0.2s; }
+.vit-card:hover .vit-btn { transform: translateX(2px); }
+.card-student h3 { color: var(--student-accent); } .card-student .vit-btn { background: var(--student-accent); }
+.card-employee h3 { color: var(--faculty-accent); } .card-employee .vit-btn { background: var(--faculty-accent); }
 
-.portal-container {
-    max-width: 680px;
-    width: 100%;
-    padding: 40px 30px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 24px;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
-}
-
-.portal-header-badge {
-    display: inline-block;
-    padding: 6px 14px;
-    background: #eff6ff;
-    color: var(--p);
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 20px;
-    margin-bottom: 16px;
-    letter-spacing: 0.3px;
-}
-
-.portal-centered h1 { 
-    font-size: 36px; 
-    color: var(--text-main); 
-    margin: 0 0 12px 0; 
-    font-weight: 800;
-    letter-spacing: -0.8px;
-    line-height: 1.2;
-}
-
-.portal-centered p { 
-    color: var(--text-muted); 
-    font-size: 16px;
-    margin: 0 auto 36px auto; 
-    max-width: 440px;
-    line-height: 1.5;
-}
-
-.vit-cards-row { 
-    display: flex; 
-    justify-content: center; 
-    gap: 20px; 
-    flex-wrap: wrap; 
-    width: 100%;
-}
-
-.vit-card { 
-    background: var(--card-bg); 
-    flex: 1;
-    min-width: 240px;
-    max-width: 280px;
-    border-radius: 16px; 
-    border: 1px solid var(--border-light);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
-    padding: 24px; 
-    text-align: left; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    cursor: pointer; 
-    transition: all 0.25s ease-in-out; 
-    position: relative;
-    overflow: hidden;
-}
-
-.vit-card:hover { 
-    transform: translateY(-4px); 
-    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08); 
-    border-color: rgba(0,0,0,0.1);
-}
-
-.vit-card-icon { 
-    font-size: 38px; 
-    background: #f8fafc;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-}
-
-.vit-card-content { 
-    text-align: right; 
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-}
-
-.vit-card-content h3 { 
-    margin: 0; 
-    font-size: 18px; 
-    font-weight: 700;
-}
-
-.vit-card-content span {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-.vit-btn { 
-    padding: 6px 14px; 
-    border-radius: 8px; 
-    color: white; 
-    border: none; 
-    cursor: pointer; 
-    font-size: 14px; 
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: transform 0.2s;
-}
-
-.vit-card:hover .vit-btn {
-    transform: translateX(2px);
-}
-
-.card-student h3 { color: var(--student-accent); } 
-.card-student .vit-btn { background: var(--student-accent); }
-
-.card-employee h3 { color: var(--faculty-accent); } 
-.card-employee .vit-btn { background: var(--faculty-accent); }
-
-/* Hero & General */
+/* Hero & General Layout */
 .hero{display:grid;grid-template-columns:1.2fr .8fr;padding:70px 8%;gap:40px;background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff}
-.hero h1{font-size:54px;margin:12px 0}.hero h1 span{color:#fde68a}.badge{background:#ffffff22;padding:8px 12px;border-radius:20px}
+.hero h1{font-size:54px;margin:12px 0; line-height: 1.1;}.hero h1 span{color:#fde68a}.badge{background:#ffffff22;padding:8px 12px;border-radius:20px; font-weight: 600; font-size:14px;}
 .hero-card,.card,.panel{background:#fff;color:#222;border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
 .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
 .content-section{padding:60px 8%}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
 
-/* Search Bar */
+/* Search Area */
 .search-wrapper { max-width: 600px; margin: 0 auto 30px auto; text-align: center; }
 .search-container { display: flex; gap: 10px; margin-top: 15px; }
-.search-container input { margin: 0; flex: 1; padding:12px; border-radius:8px; border:1px solid #ccc;}
+.search-container input { margin: 0; flex: 1; padding:12px; border-radius:8px; border:1px solid #ccc; font-size:15px;}
 .no-results { grid-column: 1 / -1; text-align: center; color: #666; padding: 20px; }
 
-/* Booking */
+/* Booking System */
 .booking{display:grid;grid-template-columns:1.2fr .8fr;gap:24px}
-input,select,textarea{width:100%;padding:11px;margin:8px 0 16px;border:1px solid #ddd;border-radius:10px}
+input,select,textarea{width:100%;padding:11px;margin:8px 0 16px;border:1px solid #ddd;border-radius:10px; font-size:14px;}
 .green{color:#16a34a;font-weight:700}.red{color:#dc2626;font-weight:700}.yellow{color:#d97706;font-weight:700}
-.success{margin-top:20px;background:#dcfce7;padding:12px;border-radius:10px; color:#16a34a;}
+.success{margin-top:20px;background:#dcfce7;padding:12px;border-radius:10px; color:#16a34a; font-weight: bold;}
 .highlight-slot{background:#fef3c7; border: 2px solid #f59e0b; padding:15px; border-radius:10px; margin-bottom:15px;}
 
-/* Upload Section */
-.upload-box { background: #eff6ff; border: 2px dashed #93c5fd; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 25px; }
+/* Upload UI */
+.upload-box { background: #eff6ff; border: 2px dashed #93c5fd; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 25px; transition:0.3s;}
+.upload-box:hover { background: #e0f2fe; border-color: #60a5fa;}
 .upload-box input[type="file"] { display: none; }
-.upload-label { display: inline-block; background: #fff; border: 1px solid #2563eb; color: #2563eb; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 15px 0; }
-.loader-text { font-family: monospace; color: #b45309; font-weight: bold; margin-top: 15px; display: none; }
+.upload-label { display: inline-block; background: #fff; border: 1px solid #2563eb; color: #2563eb; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 15px 0; transition:0.2s;}
+.upload-label:hover { background: #2563eb; color: #fff;}
+.loader-text { font-family: monospace; color: #b45309; font-weight: bold; margin-top: 15px; display: none; font-size: 15px;}
 
-/* Dashboard Tables & Appointments */
+/* Dashboard Tables */
 .dashboard-header { background: #fff; padding: 30px 8%; margin-bottom: 30px; border-bottom: 1px solid #ddd; display:flex; justify-content: space-between; align-items:center;}
-.dashboard-header h2 { margin: 0; }
+.dashboard-header h2 { margin: 0; color:#0f172a;}
 .schedule-container { overflow-x: auto; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.05); margin-bottom: 30px;}
 table { width: 100%; border-collapse: collapse; min-width: 900px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-th { background: #f8fafc; color: #333; font-size:13px;}
-td input { margin: 0; padding: 8px; width: 100%; border: 1px dashed #ccc; background: transparent; text-align: center; font-size:13px; font-weight:600; color:#1e40af;}
-td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none; }
+th, td { border: 1px solid #e2e8f0; padding: 6px; text-align: center; }
+th { background: #f8fafc; color: #334155; font-size:13px; font-weight:700; padding:12px 6px;}
 
+/* Slot Cell Design - FFCS Specific */
+.slot-cell { display: flex; flex-direction: column; gap: 4px; padding: 6px; border-radius: 6px; transition:0.2s;}
+.slot-code-label { font-size: 11px; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; display: inline-block; margin: 0 auto; letter-spacing: 0.5px;}
+td input { margin: 0; padding: 8px; width: 100%; border: 1px dashed #cbd5e1; background: #fff; text-align: center; font-size:13px; font-weight:700; color:#1e40af; border-radius: 6px; transition:0.2s;}
+td input:focus { border: 1px solid var(--p); background: #eff6ff; outline: none; }
+.slot-busy { background: #fee2e2 !important; border-color: #f87171 !important; color: #991b1b !important; }
+
+/* Appointments */
 .appt-card { background: #fff; border: 1px solid #eee; border-left: 4px solid var(--p); padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,.03); display: flex; justify-content: space-between; align-items: center;}
-.appt-info h4 { margin: 0 0 5px 0; }
-.appt-info p { margin: 2px 0; font-size: 13px; color: #555; }
-.badge-status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.appt-info h4 { margin: 0 0 5px 0; font-size:16px;}
+.appt-info p { margin: 3px 0; font-size: 13px; color: #475569; }
+.badge-status { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 .status-pending { background: #fef3c7; color: #92400e; }
 .status-approved { background: #dcfce7; color: #166534; }
 .status-rejected { background: #fee2e2; color: #991b1b; }
-.fac-actions button { margin-left: 5px; padding: 6px 12px; font-size: 12px;}
 
-/* Live Location & Status Badges */
+/* Status Badges */
 .status-badge-inline { padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
 .badge-available { background: #dcfce7; color: #15803d; }
 .badge-inclass { background: #fee2e2; color: #b91c1c; }
 .location-tag { background: #f1f5f9; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #334155; margin: 8px 0; font-weight: 600; border: 1px solid #e2e8f0; }
 
-/* Login Portal */
 .login-container { max-width: 400px; margin: 80px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
-.login-container h2 { text-align: center; margin-top: 0; color: var(--p); }
+.login-container h2 { text-align: center; margin-top: 0; color: var(--p); font-weight:800;}
 
 @media(max-width:900px){.hero,.booking{grid-template-columns:1fr}.hero h1{font-size:40px}#mainAppHeader{flex-direction:column;gap:12px} .appt-card{flex-direction:column; align-items:flex-start; gap:10px;}}
 </style>
 </head>
 <body>
 
-<!-- ================= 1. FRONT PAGE PORTAL VIEW ================= -->
+<!-- 1. PORTAL VIEW -->
 <div id="portalView" class="view-section active-view">
     <div class="portal-centered">
         <div class="portal-container">
-            <span class="portal-header-badge">Academic Scheduling Portal</span>
+            <span class="portal-header-badge">FFCS Academic Scheduling</span>
             <h1>Faculty Finder Pro</h1>
-            <p>Select your portal to manage availability or schedule mutual free appointments.</p>
+            <p>Select your portal to manage your exact FFCS slot availability or schedule mutual free appointments.</p>
             
             <div class="vit-cards-row">
                 <div class="vit-card card-student" onclick="goToLogin('Student')">
@@ -254,7 +141,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
                     <div class="vit-card-icon">👨‍🏫</div>
                     <div class="vit-card-content">
                         <h3>Faculty</h3>
-                        <span>Manage Schedule</span>
+                        <span>Manage Matrix</span>
                         <button class="vit-btn">Continue &rarr;</button>
                     </div>
                 </div>
@@ -263,63 +150,63 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
     </div>
 </div>
 
-<!-- ================= MAIN APP HEADER ================= -->
+<!-- HEADER -->
 <header id="mainAppHeader">
-    <div class="logo" onclick="showView('homeView')" style="cursor:pointer; font-size:1.2rem; font-weight:bold;">🎓 Faculty Finder</div>
+    <div class="logo" onclick="showView('homeView')" style="cursor:pointer; font-size:1.3rem; font-weight:800; color:#1e3a8a;">🎓 Faculty Finder</div>
     <nav id="mainNav">
         <a id="navHomeLink" onclick="showView('homeView')">Home</a>
         <a onclick="showView('portalView')">Main Portal</a>
         <a id="navSearchLink" onclick="showView('homeView'); scrollToSearch();">Search</a>
-        <button class="btn-primary" id="loginBtn" onclick="showView('dashboardView')">My Dashboard</button>
+        <button class="btn-primary" id="loginBtn" onclick="showView('dashboardView')">My Matrix</button>
     </nav>
 </header>
 
-<!-- ================= 2. LOGIN FORM VIEW ================= -->
+<!-- 2. LOGIN FORM -->
 <div id="loginView" class="view-section">
     <div class="login-container">
-        <button onclick="showView('portalView')" style="background:transparent; color:#666; padding:0; margin-bottom:15px; font-weight:normal; border:none; cursor:pointer;">← Back to Role Selection</button>
+        <button onclick="showView('portalView')" style="background:transparent; color:#64748b; padding:0; margin-bottom:15px; font-weight:normal; border:none; cursor:pointer;">&larr; Back to Role Selection</button>
         <h2>Secure Login</h2>
         <form onsubmit="processLogin(event)">
-            <label>Selected Role</label>
+            <label style="font-weight:600; font-size:14px;">Selected Role</label>
             <select id="userRole" required style="background:#f1f5f9;">
                 <option value="Student">Student</option>
                 <option value="Faculty">Faculty (Employee)</option>
             </select>
             
-            <label>Registration / Employee ID</label>
-            <input type="text" id="regNo" placeholder="e.g. EMP001 (Faculty) or 24BCE10011 (Student)" required>
+            <label style="font-weight:600; font-size:14px;">Registration / Employee ID</label>
+            <input type="text" id="regNo" placeholder="e.g. EMP001 or 24BCE10011" required>
             
-            <label>Full Name</label>
+            <label style="font-weight:600; font-size:14px;">Full Name</label>
             <input type="text" id="userName" placeholder="Your Name" required>
             
-            <button type="submit" style="width:100%; margin-top:10px;">Login to System</button>
+            <button type="submit" style="width:100%; margin-top:10px; font-size:16px; padding:12px;">Login to System</button>
         </form>
     </div>
 </div>
 
-<!-- ================= 3. HOME / SEARCH VIEW (For Students Only) ================= -->
+<!-- 3. HOME / SEARCH (Students) -->
 <div id="homeView" class="view-section">
     <section class="hero">
         <div>
-            <span class="badge">FFCS Smart Match Technology</span>
+            <span class="badge">FFCS Exact Match Engine</span>
             <h1>Meet Your Faculty <span>Without Waiting.</span></h1>
-            <p>Upload your schedule, search your faculty, and our algorithm will instantly find the nearest mutual free slot.</p>
+            <p>Upload your official FFCS schedule. Our exact Slot Code mapping instantly finds the absolute nearest mutual free slot.</p>
             <div class="actions">
-                <button onclick="scrollToSearch()">Find Faculty</button>
+                <button onclick="scrollToSearch()" style="padding:14px 24px; font-size:16px;">Find Faculty Now</button>
             </div>
         </div>
         <div class="hero-card">
-            <h3>System Status</h3>
-            <div class="row"><span>📄 Sync Matrix</span><span class="green">Active</span></div>
+            <h3 style="margin-top:0;">System Status</h3>
+            <div class="row"><span>📄 OCR Matrix Sync</span><span class="green">Active</span></div>
             <div class="row"><span>📅 Live Override</span><span class="green">Active</span></div>
-            <div class="row"><span>📍 Live Location Sync</span><span class="green">Active</span></div>
+            <div class="row"><span>📍 Location Ping</span><span class="green">Active</span></div>
         </div>
     </section>
 
     <section id="faculty" class="content-section">
         <div class="search-wrapper">
-            <h2>Search Faculty</h2>
-            <p style="color:#666; font-size:14px; margin-top:-5px; margin-bottom:15px;">Search by Name, Department, ID, or Cabin Room</p>
+            <h2>Search Faculty Directory</h2>
+            <p style="color:#64748b; font-size:14px; margin-top:-5px; margin-bottom:15px;">Search by Name, Department, ID, or Cabin Room</p>
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="e.g. 'Sharma', 'Computer Science', or 'C-204'..." onkeyup="handleSearch(event)">
                 <button onclick="searchFaculty()">Search</button>
@@ -334,65 +221,63 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
         <h2>Book Appointment</h2>
         <div class="booking">
             <div class="panel">
-                <label>Selected Faculty</label>
-                <input id="facultyName" placeholder="Search and select a faculty first..." readonly style="background:#f1f5f9;">
+                <label style="font-weight:bold;">Selected Faculty</label>
+                <input id="facultyName" placeholder="Search and select a faculty first..." readonly style="background:#f1f5f9; color:#475569; font-weight:600;">
                 <input type="hidden" id="facultyId"> 
                 
-                <!-- Live Location Tag on Booking Panel -->
                 <div id="selectedFacultyLocationBox" class="location-tag" style="display:none; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; margin-bottom:15px;">
                     📍 <strong>Live Location:</strong> <span id="selectedFacultyLocationText">-</span>
                 </div>
 
                 <div class="highlight-slot" id="smartMatchBox" style="display:none;">
                     <h3 style="margin-top:0; color:#b45309;">✨ Nearest Mutual Free Slot Found!</h3>
-                    <p id="matchDetails" style="font-weight:bold; margin-bottom:5px;"></p>
-                    <p style="font-size:13px; color:#666; margin-top:0;">Based on live matrices comparison.</p>
+                    <p id="matchDetails" style="font-weight:bold; margin-bottom:5px; font-size:15px;"></p>
+                    <p style="font-size:13px; color:#666; margin-top:0;">Based on exact FFCS slot matrices comparison.</p>
                 </div>
 
-                <button id="findSlotBtn" class="btn-success" onclick="findMutualSlots()" style="width:100%; margin-bottom:15px; display:none;">🔍 Find Mutual Free Time</button>
+                <button id="findSlotBtn" class="btn-success" onclick="findMutualSlots()" style="width:100%; margin-bottom:15px; display:none; padding:12px; font-size:15px;">🔍 Run Smart FFCS Match</button>
 
-                <label>Select Mutual Available Time Slot</label>
+                <label style="font-weight:bold;">Select Mutual Available Time Slot</label>
                 <select id="timeSlotDropdown">
                     <option value="">-- Please run Smart Match first --</option>
                 </select>
 
-                <label>Purpose</label>
+                <label style="font-weight:bold;">Purpose</label>
                 <select id="bookingPurpose">
                     <option>Project Guidance</option>
                     <option>Assignment Discussion</option>
                     <option>Research / Doubt Clearing</option>
                     <option>General Academic Query</option>
                 </select>
-                <label>Message</label>
-                <textarea id="bookingMessage" placeholder="Describe your request..."></textarea>
-                <button onclick="bookAppointment()">Confirm Appointment</button>
+                <label style="font-weight:bold;">Message</label>
+                <textarea id="bookingMessage" placeholder="Describe your request briefly..." rows="3"></textarea>
+                <button onclick="bookAppointment()" style="width:100%; padding:12px; font-size:15px;">Confirm Appointment</button>
             </div>
             
             <div class="panel">
-                <h3>Smart Booking Workflow</h3>
-                <ol>
-                    <li>Students upload schedule. Faculty updates override slots.</li>
-                    <li>Search for Faculty & Check Live Location.</li>
-                    <li>Click "Find Mutual Free Time" to compare schedules.</li>
-                    <li>Submit Request.</li>
-                    <li>Faculty reviews and Approves from Dashboard.</li>
+                <h3 style="margin-top:0;">Smart Booking Workflow</h3>
+                <ol style="color:#334155; line-height:1.7;">
+                    <li>Go to Dashboard -> Upload FFCS screenshot.</li>
+                    <li>Search for Faculty & Check their Live Location.</li>
+                    <li>Click <strong>"Run Smart FFCS Match"</strong> to cross-check slots (A11, L1 etc.).</li>
+                    <li>Select the exact slot and Submit Request.</li>
+                    <li>Faculty Approves directly from their Dashboard.</li>
                 </ol>
             </div>
         </div>
     </section>
 </div>
 
-<!-- ================= 4. DASHBOARD / PROFILE (Dynamic Role Based) ================= -->
+<!-- 4. DASHBOARD / PROFILE -->
 <div id="dashboardView" class="view-section">
     <div class="dashboard-header">
         <div>
             <h2 id="userNameDisplay">Welcome, User</h2>
-            <p id="userRoleDisplay" style="margin:5px 0 0 0; color:#666;">Role: Unknown | ID: XXXX</p>
+            <p id="userRoleDisplay" style="margin:5px 0 0 0; color:#64748b; font-weight:500;">Role: Unknown | ID: XXXX</p>
             
-            <!-- Live Location Toggle Feature for Faculty -->
             <div id="facultyStatusControl" style="display:none; margin-top:12px;">
-                <p style="margin:0 0 6px 0; font-size:13px; font-weight:bold;">📍 Live Location & Status Control:</p>
-                <button class="btn-primary" onclick="toggleFacultyStatus()" id="statusToggleBtn" style="font-size:13px; padding:6px 14px; background:#16a34a;">
+                <p style="margin:0 0 6px 0; font-size:13px; font-weight:bold;">📍 Live Location Control:</p>
+                <button class="btn-primary" onclick="toggleFacultyStatus()" id="statusToggleBtn" style="font-size:12px; padding:6px 14px; background:#16a34a;">
                     Set Status: Available
                 </button>
                 <span id="facultyCurrentLocLabel" style="font-size:13px; margin-left:10px; font-weight:600; color:#334155;">
@@ -405,47 +290,43 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 
     <section class="content-section" style="padding-top:0;">
         
-        <!-- SECTION 1: APPOINTMENTS MANAGER -->
         <div id="appointmentsSection" style="margin-bottom: 40px;">
             <h2 id="apptHeader">My Appointments</h2>
-            <p id="apptSub" style="color:#666; font-size:14px;">Track your booking statuses here.</p>
+            <p id="apptSub" style="color:#64748b; font-size:14px; margin-top:-5px;">Track your booking statuses here.</p>
             
-            <!-- Faculty View: Separate Pending and Scheduled Requests -->
             <div id="facultyApptContainer" style="display:none;">
                 <div style="margin-bottom:25px;">
-                    <h3 style="color:#b45309; font-size:18px; margin-bottom:10px;">⏳ Pending Approval Requests</h3>
+                    <h3 style="color:#b45309; font-size:18px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">⏳ Pending Approvals</h3>
                     <div id="pendingList"></div>
                 </div>
                 <div>
-                    <h3 style="color:#15803d; font-size:18px; margin-bottom:10px;">📅 Scheduled / Confirmed Meetings</h3>
+                    <h3 style="color:#15803d; font-size:18px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">📅 Scheduled Meetings</h3>
                     <div id="scheduledList"></div>
                 </div>
             </div>
 
-            <!-- Student View Container -->
             <div id="studentApptContainer">
                 <div id="appointmentsList"></div>
             </div>
         </div>
 
-        <hr style="border:0; border-top:1px solid #ddd; margin:40px 0;">
+        <hr style="border:0; border-top:1px solid #e2e8f0; margin:40px 0;">
 
-        <!-- SECTION 2: SCHEDULE MANAGER -->
-        <h2>Matrix Manager</h2>
+        <h2>FFCS Matrix Manager</h2>
         
-        <!-- FFCS Upload (Only visible to Students) -->
         <div class="upload-box" id="studentUploadArea" style="display:none;">
-            <h3>📑 FFCS Schedule Auto-Extract</h3>
-            <p style="color:#475569; font-size:14px;">Upload your timetable screenshot or PDF. Our OCR algorithm will automatically read your schedule and populate the matrix below.</p>
-            <label class="upload-label" for="ffcsFile">📁 Choose File (PDF/PNG)</label>
-            <input type="file" id="ffcsFile" accept=".pdf, image/*" onchange="processFFCSUpload(this)">
+            <h3 style="margin-top:0; color:#1e40af;">📑 FFCS Smart Upload (Slot Code Engine)</h3>
+            <p style="color:#475569; font-size:14px; max-width:800px; margin:0 auto 15px auto;">
+                Upload your timetable image. Our advanced OCR compares your schedule exactly against standard FFCS Slot Names (A11, A12, L1, etc.) and highlights them as BUSY in your matrix below.
+            </p>
+            <label class="upload-label" for="ffcsFile">📁 Select Screenshot (PNG/JPG)</label>
+            <input type="file" id="ffcsFile" accept="image/*" onchange="processFFCSUpload(this)">
             <div id="uploadStatus" class="loader-text"></div>
         </div>
 
-        <!-- Faculty specific text -->
         <div id="facultyScheduleText" style="display:none;">
-            <p style="color:#475569; font-size:14px; background:#e0f2fe; padding:15px; border-radius:8px; border-left:4px solid #0284c7;">
-                <strong>⚡ Quick Override:</strong> Do you have sudden work during a free slot? Manually update the table below (e.g., type "Busy" or "Meeting") and click Save. Students won't be able to book that slot.
+            <p style="color:#0369a1; font-size:14px; background:#e0f2fe; padding:15px; border-radius:8px; border-left:4px solid #0284c7; font-weight:500;">
+                <strong>⚡ Quick Override:</strong> Review your FFCS slots below. Manually type "BUSY" in any slot if you have sudden work, then click Save. Students cannot book Busy slots.
             </p>
         </div>
 
@@ -465,94 +346,73 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
                     </tr>
                 </thead>
                 <tbody id="scheduleBody">
-                    <!-- Generated via JS -->
+                    <!-- Matrix via JS -->
                 </tbody>
             </table>
-            <div style="margin-top: 20px; display:flex; gap:15px;">
-                <button class="btn-success" onclick="saveSchedule()">💾 Save & Sync Live Matrix</button>
-                <button class="btn-danger" style="background:#4b5563;" onclick="clearSchedule()">Clear All</button>
+            <div style="margin-top: 20px; display:flex; gap:15px; justify-content:center;">
+                <button class="btn-success" onclick="saveSchedule()" style="padding:12px 24px; font-size:15px;">💾 Save & Sync FFCS Matrix</button>
+                <button class="btn-danger" style="background:#64748b; padding:12px 24px;" onclick="clearSchedule()">Reset Table</button>
             </div>
-            <div id="saveResult" class="success" style="display:none;">✅ Matrix Saved! Live syncing updated.</div>
+            <div id="saveResult" class="success" style="display:none; text-align:center;">✅ FFCS Matrix Successfully Synced!</div>
         </div>
     </section>
 </div>
 
 <script>
-// --- GLOBAL VARIABLES & ON-LOAD LOGIC ---
+// --- GLOBAL VARS & EXACT FFCS SLOT CODES MATRIX ---
 let currentUser = null; 
 const timeSlotsLabels = ["08:30 - 10:00", "10:05 - 11:35", "11:40 - 01:10", "Lunch", "01:15 - 02:45", "02:50 - 04:20", "04:25 - 05:55", "06:00 - 07:30"];
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// Exact representation of Slot names for the UI Display
+const slotNamesGrid = {
+    "Monday":    ["A11 / L1", "A12 / L2", "A13 / L3", "Lunch", "A21 / L31", "A22 / L32", "A23 / L33", "A24 / L34"],
+    "Tuesday":   ["B11 / L7", "B12 / L8", "B13 / L9", "Lunch", "B21 / L37", "B22 / L38", "B23 / L39", "B24 / L40"],
+    "Wednesday": ["C11 / L13", "C12 / L14", "C13 / L15", "Lunch", "C21 / L43", "C22 / L44", "C23 / L45", "C24 / L46"],
+    "Thursday":  ["D11 / L19", "D12 / L20", "D13 / L21", "Lunch", "D21 / L49", "D22 / L50", "D23 / L51", "D24 / L52"],
+    "Friday":    ["E11 / L25", "E12 / L26", "E13 / L27", "Lunch", "E21 / L55", "E22 / L56", "E23 / L57", "E24 / L58"],
+    "Saturday":  ["V1", "V2", "V3", "Lunch", "V4", "V5", "V6", "V7"]
+};
 
 window.onload = function() {
     initMockDB();
     checkActiveSession();
 };
 
-// --- SECURITY UTILITY: ESCAPE HTML TO PREVENT XSS ---
 function escapeHTML(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
-    }[tag] || tag));
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag] || tag));
 }
 
 function initMockDB() {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
-    if (!db) { 
-        db = { appointments: [] }; 
-    }
-    if (!db.appointments) db.appointments = [];
-
-    // Pre-feed Sample Faculty Members with Live Locations & Status
+    if (!db) { db = { appointments: [] }; }
+    
+    // Sample Faculty Pre-fed data
     if (!db['EMP001']) {
         db['EMP001'] = {
             id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', 
             cabin: 'Cabin A-102', location: 'Block A • Room 204', status: 'In Class',
             schedule: {
-                "Monday": ["CSE1001", "Free", "Free", "Lunch", "CSE2005", "Free", "Research", "Free"],
-                "Tuesday": ["Free", "CSE1001", "Meeting", "Lunch", "Free", "CSE3002", "CSE3002", "Free"],
-                "Wednesday": ["Free", "Free", "CSE2005", "Lunch", "CSE1001", "Free", "Free", "Free"],
-                "Thursday": ["Research", "CSE3002", "CSE3002", "Lunch", "Free", "Free", "Meeting", "Free"],
-                "Friday": ["Free", "Meeting", "CSE1001", "Lunch", "Free", "CSE2005", "Free", "Free"],
-                "Saturday": ["Free", "Free", "Research", "Lunch", "Free", "Free", "Free", "Free"]
+                "Monday": ["BUSY", "Free", "Free", "Lunch", "BUSY", "Free", "Free", "Free"],
+                "Tuesday": ["Free", "BUSY", "BUSY", "Lunch", "Free", "BUSY", "Free", "Free"],
+                "Wednesday": ["Free", "Free", "BUSY", "Lunch", "BUSY", "Free", "Free", "Free"],
+                "Thursday": ["BUSY", "BUSY", "Free", "Lunch", "Free", "Free", "BUSY", "Free"],
+                "Friday": ["Free", "BUSY", "BUSY", "Lunch", "Free", "BUSY", "Free", "Free"],
+                "Saturday": ["Free", "Free", "BUSY", "Lunch", "Free", "Free", "Free", "Free"]
             }
         };
     }
-
-    if (!db['EMP002']) {
-        db['EMP002'] = {
-            id: 'EMP002', name: 'Dr. Rajesh Kumar', role: 'Faculty', dept: 'Information Technology', 
-            cabin: 'Cabin B-205', location: 'Block B • Room 118', status: 'Available',
-            schedule: {
-                "Monday": ["Free", "IT2004", "Free", "Lunch", "Meeting", "Free", "Free", "Free"],
-                "Tuesday": ["IT1002", "Free", "Free", "Lunch", "IT2004", "Free", "Research", "Free"],
-                "Wednesday": ["Free", "IT1002", "Free", "Lunch", "Free", "Meeting", "Free", "Free"],
-                "Thursday": ["Free", "Free", "IT2004", "Lunch", "IT1002", "Free", "Free", "Free"],
-                "Friday": ["Research", "Free", "Free", "Lunch", "Free", "IT2004", "Free", "Free"],
-                "Saturday": ["Free", "IT2004", "Free", "Lunch", "Free", "Free", "Free", "Free"]
-            }
-        };
-    }
-
     localStorage.setItem('facultyFinderDB', JSON.stringify(db));
 }
 
-// --- SESSION MANAGEMENT ---
 function checkActiveSession() {
-    const savedSession = localStorage.getItem('activeSession');
-    if (savedSession) {
+    const saved = localStorage.getItem('activeSession');
+    if (saved) {
         try {
-            currentUser = JSON.parse(savedSession);
+            currentUser = JSON.parse(saved);
             setupDashboardUI(); 
-            if(currentUser.role === 'Faculty') {
-                showView('dashboardView');
-            } else {
-                showView('homeView');
-            }
+            showView(currentUser.role === 'Faculty' ? 'dashboardView' : 'homeView');
         } catch(e) {
             localStorage.removeItem('activeSession');
             showView('portalView');
@@ -562,25 +422,15 @@ function checkActiveSession() {
     }
 }
 
-// --- VIEW ROUTING ---
 function showView(viewId) {
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
     const target = document.getElementById(viewId);
     if(target) target.classList.add('active-view');
     
-    const appHeader = document.getElementById('mainAppHeader');
-    if(viewId === 'portalView' || viewId === 'loginView') {
-        appHeader.style.display = 'none';
-    } else {
-        appHeader.style.display = 'flex';
-    }
-
-    if(viewId === 'dashboardView' && currentUser) {
-        renderAppointments(); 
-    }
+    document.getElementById('mainAppHeader').style.display = (viewId === 'portalView' || viewId === 'loginView') ? 'none' : 'flex';
+    if(viewId === 'dashboardView' && currentUser) renderAppointments(); 
 }
 
-// --- PORTAL TO LOGIN LOGIC ---
 function goToLogin(role) {
     document.getElementById('userRole').value = role;
     showView('loginView');
@@ -591,20 +441,12 @@ function processLogin(event) {
     const regNo = document.getElementById('regNo').value.toUpperCase().trim();
     const name = document.getElementById('userName').value.trim();
     const role = document.getElementById('userRole').value;
-    
     if(!regNo || !name) return;
 
     currentUser = { id: regNo, name: name, role: role };
     localStorage.setItem('activeSession', JSON.stringify(currentUser)); 
-    
     setupDashboardUI();
-    
-    if (role === 'Faculty') {
-        showView('dashboardView'); // Directly go to Dashboard for Faculty
-    } else {
-        searchFaculty();
-        showView('homeView');
-    }
+    showView(role === 'Faculty' ? 'dashboardView' : 'homeView');
 }
 
 function logout() {
@@ -613,7 +455,6 @@ function logout() {
     showView('portalView');
 }
 
-// --- DYNAMIC DASHBOARD SETUP ---
 function setupDashboardUI() {
     if (!currentUser) return;
     document.getElementById('userNameDisplay').textContent = `Welcome, ${currentUser.name}`;
@@ -622,52 +463,27 @@ function setupDashboardUI() {
     generateScheduleTable();
     loadSchedule();
 
-    const studentUpload = document.getElementById('studentUploadArea');
-    const facultyText = document.getElementById('facultyScheduleText');
-    const apptHeader = document.getElementById('apptHeader');
-    const apptSub = document.getElementById('apptSub');
-    const statusControl = document.getElementById('facultyStatusControl');
+    const isStudent = currentUser.role === 'Student';
+    document.getElementById('studentUploadArea').style.display = isStudent ? 'block' : 'none';
+    document.getElementById('facultyScheduleText').style.display = isStudent ? 'none' : 'block';
+    document.getElementById('facultyStatusControl').style.display = isStudent ? 'none' : 'block';
     
-    const navHome = document.getElementById('navHomeLink');
-    const navSearch = document.getElementById('navSearchLink');
+    document.getElementById('navHomeLink').style.display = isStudent ? 'inline' : 'none';
+    document.getElementById('navSearchLink').style.display = isStudent ? 'inline' : 'none';
 
-    if (currentUser.role === 'Student') {
-        studentUpload.style.display = 'block';
-        facultyText.style.display = 'none';
-        statusControl.style.display = 'none';
-        
-        if(navHome) navHome.style.display = 'inline';
-        if(navSearch) navSearch.style.display = 'inline';
+    document.getElementById('studentApptContainer').style.display = isStudent ? 'block' : 'none';
+    document.getElementById('facultyApptContainer').style.display = isStudent ? 'none' : 'block';
 
-        document.getElementById('studentApptContainer').style.display = 'block';
-        document.getElementById('facultyApptContainer').style.display = 'none';
-
-        apptHeader.textContent = 'My Booking History';
-        apptSub.textContent = 'Track the status of appointments you requested.';
-    } else { // Faculty Portal Config
-        studentUpload.style.display = 'none';
-        facultyText.style.display = 'block';
-        statusControl.style.display = 'block';
-
-        // Hide Search and Home options for Faculty to keep simple portal
-        if(navHome) navHome.style.display = 'none';
-        if(navSearch) navSearch.style.display = 'none';
-
-        document.getElementById('studentApptContainer').style.display = 'none';
-        document.getElementById('facultyApptContainer').style.display = 'block';
-
-        apptHeader.textContent = 'Appointments & Requests Dashboard';
-        apptSub.textContent = 'Manage incoming pending requests and view scheduled meetings.';
-        updateFacultyStatusUI();
-    }
+    document.getElementById('apptHeader').textContent = isStudent ? 'My Booking History' : 'Appointments & Requests';
+    document.getElementById('apptSub').textContent = isStudent ? 'Track the status of appointments you requested.' : 'Manage incoming pending requests and view scheduled meetings.';
+    
+    if(!isStudent) updateFacultyStatusUI();
 }
 
-// --- LIVE LOCATION & STATUS CONTROLLER ---
 function toggleFacultyStatus() {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     if (db[currentUser.id]) {
-        let fac = db[currentUser.id];
-        fac.status = (fac.status === 'Available') ? 'In Class' : 'Available';
+        db[currentUser.id].status = (db[currentUser.id].status === 'Available') ? 'In Class' : 'Available';
         localStorage.setItem('facultyFinderDB', JSON.stringify(db));
         updateFacultyStatusUI();
     }
@@ -679,21 +495,21 @@ function updateFacultyStatusUI() {
     if (fac) {
         const btn = document.getElementById('statusToggleBtn');
         const label = document.getElementById('facultyCurrentLocLabel');
-        const currentLiveLoc = (fac.status === 'In Class') ? `${fac.location || 'Block A • Room 204'} (In Class)` : `${fac.cabin || 'Cabin'} (Available)`;
+        const loc = (fac.status === 'In Class') ? `${fac.location || 'Block A • Room 204'} (In Class)` : `${fac.cabin || 'Cabin'} (Available)`;
 
         if (fac.status === 'Available') {
             btn.textContent = "Switch to: In Class";
             btn.style.background = "#dc2626";
-            label.innerHTML = `Current Location: 🟢 <strong>${currentLiveLoc}</strong>`;
+            label.innerHTML = `Current Location: 🟢 <strong>${loc}</strong>`;
         } else {
             btn.textContent = "Switch to: Available";
             btn.style.background = "#16a34a";
-            label.innerHTML = `Current Location: 🔴 <strong>${currentLiveLoc}</strong>`;
+            label.innerHTML = `Current Location: 🔴 <strong>${loc}</strong>`;
         }
     }
 }
 
-// --- APPOINTMENTS & SCHEDULED REQUESTS LOGIC ---
+// --- APPOINTMENTS RENDERING ---
 function renderAppointments() {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     let apps = db.appointments || [];
@@ -704,67 +520,56 @@ function renderAppointments() {
         let myApps = apps.filter(a => a.studentId === currentUser.id);
         
         if(myApps.length === 0) {
-            container.innerHTML = '<p style="color:#666;">You have not made any booking requests yet.</p>';
+            container.innerHTML = '<p style="color:#64748b;">You have not made any booking requests yet.</p>';
             return;
         }
 
         myApps.slice().reverse().forEach(app => {
             let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            let downloadBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
+            let dlBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
 
             container.innerHTML += `
                 <div class="appt-card">
                     <div class="appt-info">
                         <h4>Meeting with ${escapeHTML(app.facultyName)}</h4>
-                        <p><strong>Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                        <p><strong>Slot Details:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
                         <p><strong>Purpose:</strong> ${escapeHTML(app.purpose)}</p>
-                        ${app.message ? `<p><em>"${escapeHTML(app.message)}"</em></p>` : ''}
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
-                        ${downloadBtn}
+                    <div style="display:flex; align-items:center;">
+                        <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>${dlBtn}
                     </div>
-                </div>
-            `;
+                </div>`;
         });
-    } else { // FACULTY PORTAL (Pending vs Scheduled Requests)
+    } else {
         let pendingContainer = document.getElementById('pendingList');
         let scheduledContainer = document.getElementById('scheduledList');
-        
-        pendingContainer.innerHTML = '';
-        scheduledContainer.innerHTML = '';
+        pendingContainer.innerHTML = ''; scheduledContainer.innerHTML = '';
 
         let facApps = apps.filter(a => a.facultyId === currentUser.id);
-
         let pendingApps = facApps.filter(a => a.status === 'Pending');
-        let scheduledApps = facApps.filter(a => a.status === 'Approved' || a.status === 'Rejected');
+        let scheduledApps = facApps.filter(a => a.status !== 'Pending');
 
-        // Render Pending Requests
-        if (pendingApps.length === 0) {
-            pendingContainer.innerHTML = '<p style="color:#666; font-size:13px;">No pending requests right now.</p>';
-        } else {
+        if (pendingApps.length === 0) pendingContainer.innerHTML = '<p style="color:#64748b; font-size:14px;">No pending requests right now.</p>';
+        else {
             pendingApps.slice().reverse().forEach(app => {
                 pendingContainer.innerHTML += `
                     <div class="appt-card" style="border-left-color: #f59e0b;">
                         <div class="appt-info">
                             <h4>Request from ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
-                            <p><strong>Requested Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                            <p><strong>Requested:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
                             <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
                             ${app.message ? `<p><em>"${escapeHTML(app.message)}"</em></p>` : ''}
                         </div>
-                        <div class="fac-actions" style="display:flex; align-items:center; gap:8px;">
+                        <div class="fac-actions">
                             <button class="btn-success" onclick="updateApptStatus('${app.id}', 'Approved')">Accept</button>
                             <button class="btn-danger" onclick="updateApptStatus('${app.id}', 'Rejected')">Decline</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
-        // Render Scheduled/Confirmed Requests
-        if (scheduledApps.length === 0) {
-            scheduledContainer.innerHTML = '<p style="color:#666; font-size:13px;">No scheduled meetings yet.</p>';
-        } else {
+        if (scheduledApps.length === 0) scheduledContainer.innerHTML = '<p style="color:#64748b; font-size:14px;">No scheduled meetings yet.</p>';
+        else {
             scheduledApps.slice().reverse().forEach(app => {
                 let badgeClass = (app.status === 'Approved') ? 'status-approved' : 'status-rejected';
                 let calBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
@@ -773,15 +578,13 @@ function renderAppointments() {
                     <div class="appt-card" style="border-left-color: ${app.status === 'Approved' ? '#16a34a' : '#dc2626'};">
                         <div class="appt-info">
                             <h4>Meeting with ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
-                            <p><strong>Scheduled Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                            <p><strong>Scheduled:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
                             <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
-                            ${calBtn}
+                        <div style="display:flex; align-items:center;">
+                            <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>${calBtn}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
     }
@@ -789,8 +592,6 @@ function renderAppointments() {
 
 function updateApptStatus(appId, newStatus) {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    if(!db.appointments) return;
-
     let index = db.appointments.findIndex(a => a.id === appId);
     if(index > -1) {
         db.appointments[index].status = newStatus;
@@ -801,64 +602,24 @@ function updateApptStatus(appId, newStatus) {
 
 function exportApptICS(appId) {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    let app = (db.appointments || []).find(a => a.id === appId);
+    let app = db.appointments.find(a => a.id === appId);
     if(!app) return;
 
     const icsData = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//Faculty Finder Pro//EN",
-        "BEGIN:VEVENT",
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Faculty Finder Pro//EN", "BEGIN:VEVENT",
         `SUMMARY:Academic Meeting - ${app.purpose}`,
         `DESCRIPTION:Meeting between ${app.studentName} and ${app.facultyName}. Slot: ${app.timeSlot}`,
-        "STATUS:CONFIRMED",
-        "END:VEVENT",
-        "END:VCALENDAR"
+        "STATUS:CONFIRMED", "END:VEVENT", "END:VCALENDAR"
     ].join("\r\n");
 
     const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.setAttribute('download', `appointment_${app.id}.ics`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 
-// --- SCHEDULE EXTRACTION & MATRIX MANAGEMENT ---
-function processFFCSUpload(input) {
-    if(!input.files || input.files.length === 0) return;
-    const statusText = document.getElementById('uploadStatus');
-    statusText.style.display = 'block';
-    
-    let steps = ["⏳ Reading metadata...", "⚙️ Running OCR extraction...", "✅ Extraction complete!"];
-    let stepCount = 0;
-    statusText.innerHTML = steps[stepCount];
-    
-    let interval = setInterval(() => {
-        stepCount++;
-        if (stepCount < steps.length) { statusText.innerHTML = steps[stepCount]; } 
-        else {
-            clearInterval(interval);
-            autoPopulateExtractedSchedule();
-            setTimeout(() => { statusText.style.display = 'none'; input.value = ''; }, 2000);
-        }
-    }, 700); 
-}
-
-function autoPopulateExtractedSchedule() {
-    const dummySubjects = ["CSE2001", "MAT1011", "PHY1701", "ENG1901", "CSE3002"];
-    days.forEach(day => {
-        for(let i = 0; i < timeSlotsLabels.length; i++) {
-            if(i !== 3) { // Skip Lunch (index 3)
-                const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-                if(input) input.value = (Math.random() > 0.4) ? "" : dummySubjects[Math.floor(Math.random() * dummySubjects.length)];
-            }
-        }
-    });
-    saveSchedule();
-}
-
+// --- GENERATE SCHEDULE MATRIX WITH FFCS SLOT NAMES ---
 function generateScheduleTable() {
     const tbody = document.getElementById('scheduleBody');
     if(!tbody) return;
@@ -867,15 +628,102 @@ function generateScheduleTable() {
         const tr = document.createElement('tr');
         let html = `<td><strong>${day}</strong></td>`;
         for(let i=0; i < timeSlotsLabels.length; i++) {
-            if(i === 3) { // Index 3 is Lunch
-                html += `<td><input type="text" value="Lunch" class="slot-input" data-day="${day}" data-index="${i}" readonly style="background:#f1f5f9; border:none; color:#94a3b8;"></td>`;
+            if(i === 3) {
+                html += `<td><div class="slot-cell" style="justify-content:center;"><input type="text" value="Lunch" readonly style="background:#f1f5f9; border:none; color:#94a3b8; font-weight:bold;"></div></td>`;
             } else {
-                html += `<td><input type="text" placeholder="Free" class="slot-input" data-day="${day}" data-index="${i}"></td>`;
+                const slotCodeLabel = slotNamesGrid[day][i];
+                html += `
+                    <td>
+                        <div class="slot-cell">
+                            <span class="slot-code-label" title="FFCS Code">${slotCodeLabel}</span>
+                            <input type="text" placeholder="Free" class="slot-input" data-day="${day}" data-index="${i}" oninput="handleInputChange(this)">
+                        </div>
+                    </td>`;
             }
         }
         tr.innerHTML = html;
         tbody.appendChild(tr);
     });
+}
+
+function handleInputChange(input) {
+    if (input.value.trim().toLowerCase() === "busy" || input.value.trim().toLowerCase().includes("busy")) {
+        input.classList.add('slot-busy');
+    } else {
+        input.classList.remove('slot-busy');
+    }
+}
+
+// --- ROBUST FUZZY OCR FOR EXACT FFCS SLOTS ---
+async function processFFCSUpload(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const statusText = document.getElementById('uploadStatus');
+    statusText.style.display = 'block';
+    statusText.innerHTML = "⏳ Scanning FFCS Table Image...";
+
+    try {
+        const result = await Tesseract.recognize(file, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    statusText.innerHTML = `⚙️ Matching Exact Slot Codes... ${Math.round(m.progress * 100)}%`;
+                }
+            }
+        });
+
+        // 1. Clean OCR Output (Fuzzy Fixer)
+        // Convert "A ll" to "A11", "L|" to "L1", "O" to "0", remove spaces between letters and numbers.
+        let rawText = result.data.text.toUpperCase();
+        let cleanedText = rawText
+            .replace(/\|/g, '1')
+            .replace(/I/g, '1')
+            .replace(/O/g, '0')
+            .replace(/([A-Z])\s+(\d)/g, '$1$2'); // e.g. "A 11" -> "A11"
+            
+        console.log("Fuzzy Cleaned OCR Text:", cleanedText);
+
+        let matchCount = 0;
+        
+        // 2. Loop through our precise Grid and Match
+        days.forEach(day => {
+            for(let i=0; i < timeSlotsLabels.length; i++) {
+                if (i === 3) continue; // Lunch
+
+                // Get array of codes in this specific cell (e.g. ["A11", "L1"])
+                const cellCodes = slotNamesGrid[day][i].split(' / ').map(c => c.trim());
+                const inputEl = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
+                
+                // If the cleaned image text contains ANY of the slot codes for this cell, mark it BUSY.
+                let isBooked = cellCodes.some(code => {
+                    // Match the exact code using word boundaries
+                    const regex = new RegExp(`\\b${code}\\b`);
+                    return regex.test(cleanedText);
+                });
+
+                if (isBooked && inputEl) {
+                    inputEl.value = "BUSY";
+                    inputEl.classList.add('slot-busy');
+                    matchCount++;
+                } else if (inputEl) {
+                    inputEl.value = "";
+                    inputEl.classList.remove('slot-busy');
+                }
+            }
+        });
+
+        if(matchCount === 0) {
+            statusText.innerHTML = `⚠️ No slot codes found. Please verify image clarity.`;
+        } else {
+            statusText.innerHTML = `✅ Complete! Exactly ${matchCount} FFCS Slots Matched.`;
+        }
+        
+        setTimeout(() => { statusText.style.display = 'none'; input.value = ''; }, 3500);
+        saveSchedule();
+
+    } catch (err) {
+        console.error("OCR Error:", err);
+        statusText.innerHTML = "❌ Error reading image. Please upload a clear FFCS screenshot.";
+    }
 }
 
 function saveSchedule() {
@@ -893,9 +741,7 @@ function saveSchedule() {
         }
     });
 
-    if(!db[currentUser.id]) {
-        db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
-    }
+    if(!db[currentUser.id]) db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
     db[currentUser.id].schedule = mySchedule;
     localStorage.setItem('facultyFinderDB', JSON.stringify(db));
     
@@ -916,7 +762,9 @@ function loadSchedule() {
                 if(i !== 3 && mySchedule[day] && mySchedule[day][i]) { 
                     const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
                     if(input) {
-                        input.value = (mySchedule[day][i].toLowerCase() === "free") ? "" : mySchedule[day][i];
+                        const val = mySchedule[day][i];
+                        input.value = (val.toLowerCase() === "free") ? "" : val;
+                        if(val.toLowerCase().includes("busy")) input.classList.add('slot-busy');
                     }
                 }
             }
@@ -925,12 +773,16 @@ function loadSchedule() {
 }
 
 function clearSchedule() {
-    if (confirm("Are you sure you want to clear all slots in your schedule matrix?")) {
-        document.querySelectorAll('.slot-input:not([readonly])').forEach(input => input.value = '');
+    if (confirm("Are you sure you want to completely reset your schedule matrix?")) {
+        document.querySelectorAll('.slot-input:not([readonly])').forEach(input => {
+            input.value = '';
+            input.classList.remove('slot-busy');
+        });
+        saveSchedule();
     }
 }
 
-// --- SEARCH & SMART MATCHING (Students View Only) ---
+// --- SEARCH & SMART BOOKING ALGORITHM ---
 function searchFaculty() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('searchResults');
@@ -948,9 +800,7 @@ function searchFaculty() {
             const roomMatch = fac.cabin && fac.cabin.toLowerCase().includes(query);
             const idMatch = fac.id && fac.id.toLowerCase().includes(query);
 
-            if(query === '' || nameMatch || deptMatch || roomMatch || idMatch) {
-                matches.push(fac);
-            }
+            if(query === '' || nameMatch || deptMatch || roomMatch || idMatch) matches.push(fac);
         }
     }
 
@@ -961,11 +811,7 @@ function searchFaculty() {
 
     matches.forEach(teacher => {
         const isAvailable = (teacher.status === 'Available');
-        
-        const liveLocDisplay = isAvailable 
-            ? `${teacher.cabin || 'Cabin'} (Available)` 
-            : `${teacher.location || 'Block A • Room 204'} (In Class)`;
-
+        const liveLocDisplay = isAvailable ? `${teacher.cabin || 'Cabin'} (Available)` : `${teacher.location || 'Block A • Room 204'} (In Class)`;
         const badgeClass = isAvailable ? 'badge-available' : 'badge-inclass';
         const badgeText = isAvailable ? '🟢 Available' : '🔴 In Class';
 
@@ -973,46 +819,36 @@ function searchFaculty() {
         card.className = 'card profile';
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <h3 style="margin-top: 0;">👩‍🏫 ${escapeHTML(teacher.name)}</h3>
+                <h3 style="margin-top: 0; color:#0f172a;">👩‍🏫 ${escapeHTML(teacher.name)}</h3>
                 <span class="status-badge-inline ${badgeClass}">${badgeText}</span>
             </div>
-            <p style="margin: 4px 0; font-size: 13px;"><strong>ID:</strong> ${escapeHTML(teacher.id)}</p>
-            <p style="margin: 4px 0; font-size: 13px;"><strong>Dept:</strong> ${escapeHTML(teacher.dept || 'Academic')}</p>
+            <p style="margin: 4px 0; font-size: 13px; color:#475569;"><strong>ID:</strong> ${escapeHTML(teacher.id)}</p>
+            <p style="margin: 4px 0; font-size: 13px; color:#475569;"><strong>Dept:</strong> ${escapeHTML(teacher.dept || 'Academic')}</p>
             
             <div class="location-tag">
                 📍 <strong>Live Location:</strong> ${escapeHTML(liveLocDisplay)}
             </div>
 
-            <button style="margin-top:10px; width:100%;" onclick="fillFaculty('${escapeHTML(teacher.name)}', '${escapeHTML(teacher.id)}', '${escapeHTML(liveLocDisplay)}')">Select for Booking</button>
+            <button style="margin-top:10px; width:100%; padding:10px;" onclick="fillFaculty('${escapeHTML(teacher.name)}', '${escapeHTML(teacher.id)}', '${escapeHTML(liveLocDisplay)}')">Select for Booking</button>
         `;
         resultsContainer.appendChild(card);
     });
 }
 
 function handleSearch(event) { if (event.key === 'Enter') searchFaculty(); }
-function scrollToSearch(){ 
-    const el = document.getElementById('faculty');
-    if(el) el.scrollIntoView({behavior:'smooth'}); 
-}
-function scrollToBook(){ 
-    const el = document.getElementById('booking');
-    if(el) el.scrollIntoView({behavior:'smooth'}); 
-}
+function scrollToSearch(){ document.getElementById('faculty').scrollIntoView({behavior:'smooth'}); }
+function scrollToBook(){ document.getElementById('booking').scrollIntoView({behavior:'smooth'}); }
 
 function fillFaculty(name, id, liveLoc){
     document.getElementById('facultyName').value = name;
     document.getElementById('facultyId').value = id;
     
-    const locBox = document.getElementById('selectedFacultyLocationBox');
-    const locText = document.getElementById('selectedFacultyLocationText');
-    if(locBox && locText) {
-        locText.textContent = liveLoc || 'Cabin';
-        locBox.style.display = 'block';
-    }
+    document.getElementById('selectedFacultyLocationText').textContent = liveLoc || 'Cabin';
+    document.getElementById('selectedFacultyLocationBox').style.display = 'block';
 
     document.getElementById('findSlotBtn').style.display = 'block';
     document.getElementById('smartMatchBox').style.display = 'none'; 
-    document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Click Find Mutual Free Time --</option>';
+    document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Click Run Smart FFCS Match --</option>';
     scrollToBook();
 }
 
@@ -1023,22 +859,13 @@ function isFree(statusStr) {
 }
 
 function findMutualSlots() {
-    if(!currentUser) {
-        alert("⚠️ Session expired. Please log in again.");
-        showView('portalView');
-        return;
-    }
-    
+    if(!currentUser) { alert("⚠️ Session expired. Please log in again."); showView('portalView'); return; }
     const facId = document.getElementById('facultyId').value;
-    if(!facId) {
-        alert("Please select a faculty member first.");
-        return;
-    }
+    if(!facId) { alert("Please select a faculty member first."); return; }
 
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    
     if(!db[currentUser.id] || !db[currentUser.id].schedule) {
-        alert("⚠️ Please go to your Dashboard and Save your schedule first!");
+        alert("⚠️ Please go to your Dashboard and Save your FFCS schedule first!");
         showView('dashboardView');
         return;
     }
@@ -1050,9 +877,7 @@ function findMutualSlots() {
 
     const bookedSlots = new Set();
     appointments.forEach(app => {
-        if(app.facultyId === facId && app.status === 'Approved') {
-            bookedSlots.add(app.timeSlot);
-        }
+        if(app.facultyId === facId && app.status === 'Approved') bookedSlots.add(app.timeSlot);
     });
 
     let mutualSlots = []; 
@@ -1062,11 +887,12 @@ function findMutualSlots() {
         const facultyDay = facultySchedule[day] || [];
 
         for(let i=0; i < timeSlotsLabels.length; i++) {
-            if(i === 3) continue; // Skip Lunch (index 3)
+            if(i === 3) continue; // Skip Lunch
             
             const sStatus = studentDay[i] || "Free";
             const fStatus = facultyDay[i] || "Free";
-            const slotLabel = `${day} | ${timeSlotsLabels[i]}`;
+            const slotName = slotNamesGrid[day][i];
+            const slotLabel = `${day} | ${timeSlotsLabels[i]} (${slotName})`;
 
             if(isFree(sStatus) && isFree(fStatus) && !bookedSlots.has(slotLabel)) {
                 mutualSlots.push(slotLabel);
@@ -1086,9 +912,9 @@ function findMutualSlots() {
         dropdown.innerHTML = '<option value="">No overlapping time found</option>';
     } else {
         matchBox.style.display = 'block';
-        matchBox.style.borderColor = '#f59e0b';
-        matchBox.style.backgroundColor = '#fef3c7';
-        document.getElementById('matchDetails').innerHTML = `Earliest Slot: 🕒 ${escapeHTML(mutualSlots[0])}`;
+        matchBox.style.borderColor = '#16a34a';
+        matchBox.style.backgroundColor = '#dcfce7';
+        document.getElementById('matchDetails').innerHTML = `Earliest Free Slot: 🕒 <span style="color:#15803d">${escapeHTML(mutualSlots[0])}</span>`;
         
         mutualSlots.forEach(slot => {
             let opt = document.createElement('option');
@@ -1097,6 +923,38 @@ function findMutualSlots() {
             dropdown.appendChild(opt);
         });
     }
+}
+
+function bookAppointment() {
+    if (!currentUser) return;
+    const facName = document.getElementById('facultyName').value;
+    const facId = document.getElementById('facultyId').value;
+    const timeSlot = document.getElementById('timeSlotDropdown').value;
+    const purpose = document.getElementById('bookingPurpose').value;
+    const message = document.getElementById('bookingMessage').value;
+
+    if (!facId || !timeSlot) { alert("Please select a faculty and valid mutual free slot."); return; }
+
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    if (!db.appointments) db.appointments = [];
+
+    const newAppointment = {
+        id: 'APP_' + Date.now(),
+        studentId: currentUser.id,
+        studentName: currentUser.name,
+        facultyId: facId,
+        facultyName: facName,
+        timeSlot: timeSlot,
+        purpose: purpose,
+        message: message,
+        status: 'Pending'
+    };
+
+    db.appointments.push(newAppointment);
+    localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+
+    alert("🎉 Appointment Request Submitted! Track it from your Dashboard.");
+    showView('dashboardView');
 }
 </script>
 </body>
