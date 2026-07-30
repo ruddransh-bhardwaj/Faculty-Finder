@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Faculty Finder Pro - Role Selection</title>
+<style>
+:root{--p:#2563eb;--bg:#f5f7fb}
+*{box-sizing:border-box;font-family:Inter,Arial,sans-serif}
+body{margin:0;background:var(--bg);color:#222; overflow-x: hidden;}
+
+/* --- MAIN APP HEADER (Hidden on Portal) --- */
+#mainAppHeader {display:none; justify-content:space-between; align-items:center; padding:18px 8%; background:#fff; position:sticky; top:0; box-shadow:0 2px 10px rgba(0,0,0,.05); z-index: 100;}
+nav{display:flex;gap:18px;align-items:center}nav a{text-decoration:none;color:#444; cursor:pointer;}
+.btn-primary,button{background:var(--p);color:#fff;border:none;padding:11px 18px;border-radius:10px;cursor:pointer; font-weight:600; transition:0.2s;}
+button:hover{opacity:0.9;}
+.btn-danger{background:#dc2626;}
+.btn-success{background:#16a34a;}
+
+/* Main Views */
+.view-section { display: none; }
+.active-view { display: block; }
+
+/* ================= CLEAN PORTAL STYLES ================= */
+.portal-centered { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6f9; text-align: center; padding: 20px; }
+.portal-centered h1 { font-size: 32px; color: #1b5b97; margin-bottom: 10px; font-family: 'Times New Roman', Times, serif;}
+.portal-centered p { color: #666; margin-bottom: 40px; }
+
+.vit-cards-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+.vit-card { background: white; width: 280px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); padding: 25px; text-align: center; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.3s; }
+.vit-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
+.vit-card-icon { font-size: 45px; }
+.vit-card-content { text-align: right; }
+.vit-card-content h3 { margin: 0 0 12px 0; font-size: 20px; }
+.vit-btn { padding: 8px 18px; border-radius: 4px; color: white; border: none; cursor: pointer; font-size: 16px; font-weight: bold;}
+
+.card-student { border-top: 4px solid #007bff; } .card-student h3 { color: #007bff; } .card-student .vit-btn { background: #007bff; }
+.card-employee { border-top: 4px solid #d4a017; } .card-employee h3 { color: #d4a017; } .card-employee .vit-btn { background: #d4a017; }
+
+/* Hero & General */
+.hero{display:grid;grid-template-columns:1.2fr .8fr;padding:70px 8%;gap:40px;background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff}
+.hero h1{font-size:54px;margin:12px 0}.hero h1 span{color:#fde68a}.badge{background:#ffffff22;padding:8px 12px;border-radius:20px}
+.hero-card,.card,.panel{background:#fff;color:#222;border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
+.content-section{padding:60px 8%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+
+/* Search Bar */
+.search-wrapper { max-width: 600px; margin: 0 auto 30px auto; text-align: center; }
+.search-container { display: flex; gap: 10px; margin-top: 15px; }
+.search-container input { margin: 0; flex: 1; padding:12px; border-radius:8px; border:1px solid #ccc;}
+.no-results { grid-column: 1 / -1; text-align: center; color: #666; padding: 20px; }
+
+/* Booking */
+.booking{display:grid;grid-template-columns:1.2fr .8fr;gap:24px}
+input,select,textarea{width:100%;padding:11px;margin:8px 0 16px;border:1px solid #ddd;border-radius:10px}
+.green{color:#16a34a;font-weight:700}.red{color:#dc2626;font-weight:700}.yellow{color:#d97706;font-weight:700}
+.success{margin-top:20px;background:#dcfce7;padding:12px;border-radius:10px; color:#16a34a;}
+.highlight-slot{background:#fef3c7; border: 2px solid #f59e0b; padding:15px; border-radius:10px; margin-bottom:15px;}
+
+/* Upload Section */
+.upload-box { background: #eff6ff; border: 2px dashed #93c5fd; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 25px; }
+.upload-box input[type="file"] { display: none; }
+.upload-label { display: inline-block; background: #fff; border: 1px solid #2563eb; color: #2563eb; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 15px 0; }
+.loader-text { font-family: monospace; color: #b45309; font-weight: bold; margin-top: 15px; display: none; }
+
+/* Dashboard Tables & Appointments */
+.dashboard-header { background: #fff; padding: 30px 8%; margin-bottom: 30px; border-bottom: 1px solid #ddd; display:flex; justify-content: space-between; align-items:center;}
+.dashboard-header h2 { margin: 0; }
+.schedule-container { overflow-x: auto; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.05); margin-bottom: 30px;}
+table { width: 100%; border-collapse: collapse; min-width: 800px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+th { background: #f8fafc; color: #333; font-size:14px;}
+td input { margin: 0; padding: 8px; width: 100%; border: 1px dashed #ccc; background: transparent; text-align: center; font-size:13px; font-weight:600; color:#1e40af;}
+td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none; }
+
+.appt-card { background: #fff; border: 1px solid #eee; border-left: 4px solid var(--p); padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,.03); display: flex; justify-content: space-between; align-items: center;}
+.appt-info h4 { margin: 0 0 5px 0; }
+.appt-info p { margin: 2px 0; font-size: 13px; color: #555; }
+.badge-status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.status-pending { background: #fef3c7; color: #b45309; }
+.status-approved { background: #dcfce7; color: #16a34a; }
+.status-rejected { background: #fee2e2; color: #dc2626; }
+.fac-actions button { margin-left: 5px; padding: 6px 12px; font-size: 12px;}
+
+/* Login Portal */
+.login-container { max-width: 400px; margin: 80px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+.login-container h2 { text-align: center; margin-top: 0; color: var(--p); }
+
+@media(max-width:900px){.hero,.booking{grid-template-columns:1fr}.hero h1{font-size:40px}#mainAppHeader{flex-direction:column;gap:12px} .appt-card{flex-direction:column; align-items:flex-start; gap:10px;}}
+</style>
+</head>
+<body>
+
+<!-- ================= 1. FRONT PAGE PORTAL VIEW ================= -->
+<div id="portalView" class="view-section active-view">
+    <div class="portal-centered">
+        <h1>🎓 Faculty Finder Pro</h1>
+        <p>A smart platform for seamless academic scheduling and appointments.</p>
+        
+        <div class="vit-cards-row">
+            <div class="vit-card card-student" onclick="goToLogin('Student')">
+                <div class="vit-card-icon">👨‍🎓</div>
+                <div class="vit-card-content">
+                    <h3>Student</h3>
+                    <button class="vit-btn">⮞</button>
+                </div>
+            </div>
+            <div class="vit-card card-employee" onclick="goToLogin('Faculty')">
+                <div class="vit-card-icon">👨‍🏫</div>
+                <div class="vit-card-content">
+                    <h3>Faculty</h3>
+                    <button class="vit-btn">⮞</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MAIN APP HEADER ================= -->
+<header id="mainAppHeader">
+    <div class="logo" onclick="showView('homeView')" style="cursor:pointer; font-size:1.2rem; font-weight:bold;">🎓 Faculty Finder</div>
+    <nav id="mainNav">
+        <a onclick="showView('homeView')">Home</a>
+        <a onclick="showView('portalView')">Main Portal</a>
+        <a onclick="showView('homeView')">Search</a>
+        <button class="btn-primary" id="loginBtn" onclick="showView('dashboardView')">My Dashboard</button>
+    </nav>
+</header>
+
+<!-- ================= 2. LOGIN FORM VIEW ================= -->
+<div id="loginView" class="view-section">
+    <div class="login-container">
+        <button onclick="showView('portalView')" style="background:transparent; color:#666; padding:0; margin-bottom:15px; font-weight:normal;">← Back to Role Selection</button>
+        <h2>Secure Login</h2>
+        <form onsubmit="processLogin(event)">
+            <label>Selected Role</label>
+            <select id="userRole" required style="background:#f1f5f9; pointer-events:none;">
+                <option value="Student">Student</option>
+                <option value="Faculty">Faculty (Employee)</option>
+            </select>
+            
+            <label>Registration / Employee ID</label>
+            <input type="text" id="regNo" placeholder="e.g. 24BCE10011" required>
+            
+            <label>Full Name</label>
+            <input type="text" id="userName" placeholder="Your Name" required>
+            
+            <button type="submit" style="width:100%; margin-top:10px;">Login to System</button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= 3. HOME / SEARCH VIEW ================= -->
+<div id="homeView" class="view-section">
+    <section class="hero">
+        <div>
+            <span class="badge">FFCS Smart Match Technology</span>
+            <h1>Meet Your Faculty <span>Without Waiting.</span></h1>
+            <p>Upload your schedule, search your faculty, and our algorithm will instantly find the nearest mutual free slot.</p>
+            <div class="actions">
+                <button onclick="scrollToSearch()">Find Faculty</button>
+            </div>
+        </div>
+        <div class="hero-card">
+            <h3>System Status</h3>
+            <div class="row"><span>📄 Sync Matrix</span><span class="green">Active</span></div>
+            <div class="row"><span>📅 Live Override</span><span class="green">Active</span></div>
+            <div class="row"><span>👨‍🏫 Dr. Sharma</span><span>Free 2:00 PM</span></div>
+        </div>
+    </section>
+
+    <section id="faculty" class="content-section">
+        <div class="search-wrapper">
+            <h2>Search Faculty</h2>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="e.g. 'Sharma' or 'Anjali'..." onkeyup="handleSearch(event)">
+                <button onclick="searchFaculty()">Search</button>
+            </div>
+        </div>
+        <div id="searchResults" class="grid">
+            <p class="no-results">Enter a name above to search for faculty members.</p>
+        </div>
+    </section>
+
+    <section id="booking" class="content-section">
+        <h2>Book Appointment</h2>
+        <div class="booking">
+            <div class="panel">
+                <label>Selected Faculty</label>
+                <input id="facultyName" placeholder="Search and select a faculty first..." readonly style="background:#f1f5f9;">
+                <input type="hidden" id="facultyId"> 
+                
+                <div class="highlight-slot" id="smartMatchBox" style="display:none;">
+                    <h3 style="margin-top:0; color:#b45309;">✨ Nearest Mutual Free Slot Found!</h3>
+                    <p id="matchDetails" style="font-weight:bold; margin-bottom:5px;"></p>
+                    <p style="font-size:13px; color:#666; margin-top:0;">Based on live matrices comparison.</p>
+                </div>
+
+                <button id="findSlotBtn" class="btn-success" onclick="findMutualSlots()" style="width:100%; margin-bottom:15px; display:none;">🔍 Find Mutual Free Time</button>
+
+                <label>Select Mutual Available Time Slot</label>
+                <select id="timeSlotDropdown">
+                    <option value="">-- Please run Smart Match first --</option>
+                </select>
+
+                <label>Purpose</label>
+                <select id="bookingPurpose">
+                    <option>Project Guidance</option>
+                    <option>Assignment Discussion</option>
+                    <option>Research / Doubt Clearing</option>
+                </select>
+                <label>Message</label>
+                <textarea id="bookingMessage" placeholder="Describe your request..."></textarea>
+                <button onclick="bookAppointment()">Confirm Appointment</button>
+            </div>
+            
+            <div class="panel">
+                <h3>Smart Booking Workflow</h3>
+                <ol>
+                    <li>Students upload schedule. Faculty updates override slots.</li>
+                    <li>Search for Faculty & Click "Find Mutual Free Time".</li>
+                    <li>System compares both live schedules instantly.</li>
+                    <li>Submit Request.</li>
+                    <li>Faculty reviews and Approves from Dashboard.</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ================= 4. DASHBOARD / PROFILE (Dynamic Role Based) ================= -->
+<div id="dashboardView" class="view-section">
+    <div class="dashboard-header">
+        <div>
+            <h2 id="userNameDisplay">Welcome, User</h2>
+            <p id="userRoleDisplay" style="margin:5px 0 0 0; color:#666;">Role: Unknown | ID: XXXX</p>
+        </div>
+        <button class="btn-danger" onclick="logout()">Logout</button>
+    </div>
+
+    <section class="content-section" style="padding-top:0;">
+        
+        <!-- SECTION 1: APPOINTMENTS MANAGER -->
+        <div id="appointmentsSection" style="margin-bottom: 40px;">
+            <h2 id="apptHeader">My Appointments</h2>
+            <p id="apptSub" style="color:#666; font-size:14px;">Track your booking statuses here.</p>
+            <div id="appointmentsList">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #ddd; margin:40px 0;">
+
+        <!-- SECTION 2: SCHEDULE MANAGER -->
+        <h2>Matrix Manager</h2>
+        
+        <!-- FFCS Upload (Only visible to Students) -->
+        <div class="upload-box" id="studentUploadArea" style="display:none;">
+            <h3>📑 FFCS Schedule Auto-Extract</h3>
+            <p style="color:#475569; font-size:14px;">Upload your timetable screenshot or PDF. Our OCR algorithm will automatically read your schedule and populate the matrix below.</p>
+            <label class="upload-label" for="ffcsFile">📁 Choose File (PDF/PNG)</label>
+            <input type="file" id="ffcsFile" accept=".pdf, image/*" onchange="processFFCSUpload(this)">
+            <div id="uploadStatus" class="loader-text"></div>
+        </div>
+
+        <!-- Faculty specific text -->
+        <div id="facultyScheduleText" style="display:none;">
+            <p style="color:#475569; font-size:14px; background:#e0f2fe; padding:15px; border-radius:8px; border-left:4px solid #0284c7;">
+                <strong>⚡ Quick Override:</strong> Do you have sudden work during a free slot? Manually update the table below (e.g., type "Busy" or "Meeting") and click Save. Students won't be able to book that slot.
+            </p>
+        </div>
+
+        <div class="schedule-container">
+            <table id="scheduleTable">
+                <thead>
+                    <tr>
+                        <th>Day / Time</th>
+                        <th>09:00 - 10:00</th>
+                        <th>10:00 - 11:00</th>
+                        <th>11:00 - 12:00</th>
+                        <th>12:00 - 13:00</th>
+                        <th>13:00 - 14:00</th>
+                        <th>14:00 - 15:00</th>
+                        <th>15:00 - 16:00</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    <!-- Generated via JS -->
+                </tbody>
+            </table>
+            <div style="margin-top: 20px; display:flex; gap:15px;">
+                <button class="btn-success" onclick="saveSchedule()">💾 Save & Sync Live Matrix</button>
+                <button class="btn-danger" style="background:#4b5563;" onclick="clearSchedule()">Clear All</button>
+            </div>
+            <div id="saveResult" class="success" style="display:none;">✅ Matrix Saved! Live syncing updated.</div>
+        </div>
+    </section>
+</div>
+
+<script>
+// --- GLOBAL VARIABLES & ON-LOAD LOGIC ---
+let currentUser = null; 
+const timeSlotsLabels = ["09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00"];
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+window.onload = function() {
+    initMockDB();
+    checkActiveSession();
+};
+
+function initMockDB() {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    if (!db) { 
+        db = { appointments: [] }; 
+    }
+    if (!db.appointments) db.appointments = []; // Ensure appointments array exists
+
+    // Pre-feed Faculty Database
+    if (!db['EMP001']) {
+        db['EMP001'] = {
+            id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', room: 'C-204',
+            schedule: {
+                "Monday": ["CSE1001", "Free", "Free", "Break", "CSE2005", "Free", "Research"],
+                "Tuesday": ["Free", "CSE1001", "Meeting", "Break", "Free", "CSE3002", "CSE3002"],
+                "Wednesday": ["Free", "Free", "CSE2005", "Break", "CSE1001", "Free", "Free"],
+                "Thursday": ["Research", "CSE3002", "CSE3002", "Break", "Free", "Free", "Meeting"],
+                "Friday": ["Free", "Meeting", "CSE1001", "Break", "Free", "CSE2005", "Free"]
+            }
+        };
+    }
+    localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+}
+
+// --- SESSION MANAGEMENT ---
+function checkActiveSession() {
+    const savedSession = localStorage.getItem('activeSession');
+    if (savedSession) {
+        currentUser = JSON.parse(savedSession);
+        setupDashboardUI(); // Setup based on role
+        showView('homeView'); 
+    } else {
+        showView('portalView');
+    }
+}
+
+// --- VIEW ROUTING ---
+function showView(viewId) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+    document.getElementById(viewId).classList.add('active-view');
+    
+    const appHeader = document.getElementById('mainAppHeader');
+    if(viewId === 'portalView' || viewId === 'loginView') {
+        appHeader.style.display = 'none';
+    } else {
+        appHeader.style.display = 'flex';
+    }
+
+    if(viewId === 'dashboardView' && currentUser) {
+        renderAppointments(); // Refresh appointments whenever dashboard opens
+    }
+}
+
+// --- PORTAL TO LOGIN LOGIC ---
+function goToLogin(role) {
+    document.getElementById('userRole').value = role;
+    showView('loginView');
+}
+
+function processLogin(event) {
+    event.preventDefault();
+    const regNo = document.getElementById('regNo').value.toUpperCase();
+    const name = document.getElementById('userName').value;
+    const role = document.getElementById('userRole').value;
+    
+    currentUser = { id: regNo, name: name, role: role };
+    localStorage.setItem('activeSession', JSON.stringify(currentUser)); 
+    
+    setupDashboardUI();
+    showView('homeView'); 
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('activeSession'); 
+    showView('portalView');
+}
+
+// --- DYNAMIC DASHBOARD SETUP (Role Distinction) ---
+function setupDashboardUI() {
+    document.getElementById('userNameDisplay').textContent = `Welcome, ${currentUser.name}`;
+    document.getElementById('userRoleDisplay').textContent = `Role: ${currentUser.role} | ID: ${currentUser.id}`;
+    
+    generateScheduleTable();
+    loadSchedule();
+
+    const studentUpload = document.getElementById('studentUploadArea');
+    const facultyText = document.getElementById('facultyScheduleText');
+    const apptHeader = document.getElementById('apptHeader');
+    const apptSub = document.getElementById('apptSub');
+
+    if (currentUser.role === 'Student') {
+        studentUpload.style.display = 'block';
+        facultyText.style.display = 'none';
+        apptHeader.textContent = 'My Booking History';
+        apptSub.textContent = 'Track the status of appointments you requested.';
+    } else { // Faculty
+        studentUpload.style.display = 'none';
+        facultyText.style.display = 'block';
+        apptHeader.textContent = 'Incoming Student Requests';
+        apptSub.textContent = 'Review and manage your pending appointments.';
+    }
+}
+
+// --- APPOINTMENTS LOGIC ---
+function bookAppointment() {
+    if(!currentUser || currentUser.role !== 'Student') {
+        alert("Only registered students can book appointments!");
+        return;
+    }
+    
+    const faculty = document.getElementById('facultyName').value;
+    const facId = document.getElementById('facultyId').value;
+    const slot = document.getElementById('timeSlotDropdown').value;
+    const purpose = document.getElementById('bookingPurpose').value;
+    const message = document.getElementById('bookingMessage').value;
+    
+    if(!faculty) { alert("Please select a faculty member first!"); return; }
+    if(!slot || slot.includes("run Smart Match") || slot.includes("No overlapping")) {
+        alert("Please run Smart Match and select a valid mutual time slot!");
+        return;
+    }
+
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    
+    const newAppt = {
+        id: 'APT' + Date.now(),
+        studentId: currentUser.id,
+        studentName: currentUser.name,
+        facultyId: facId,
+        facultyName: faculty,
+        timeSlot: slot,
+        purpose: purpose,
+        message: message,
+        status: 'Pending'
+    };
+    
+    db.appointments.push(newAppt);
+    localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+    
+    alert(`✅ Request sent to ${faculty}!\nSlot: ${slot}\nYou can track the status in your Dashboard.`);
+    
+    // Reset form
+    document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Please run Smart Match first --</option>';
+    document.getElementById('smartMatchBox').style.display = 'none';
+    document.getElementById('bookingMessage').value = '';
+}
+
+function renderAppointments() {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let apps = db.appointments || [];
+    let container = document.getElementById('appointmentsList');
+    container.innerHTML = '';
+
+    let myApps = [];
+
+    if (currentUser.role === 'Student') {
+        myApps = apps.filter(a => a.studentId === currentUser.id);
+        
+        if(myApps.length === 0) {
+            container.innerHTML = '<p style="color:#666;">You have not made any booking requests yet.</p>';
+            return;
+        }
+
+        myApps.reverse().forEach(app => {
+            let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            container.innerHTML += `
+                <div class="appt-card">
+                    <div class="appt-info">
+                        <h4>Meeting with ${app.facultyName}</h4>
+                        <p><strong>Slot:</strong> 🕒 ${app.timeSlot}</p>
+                        <p><strong>Purpose:</strong> ${app.purpose}</p>
+                    </div>
+                    <div><span class="badge-status ${badgeClass}">${app.status}</span></div>
+                </div>
+            `;
+        });
+    } else { // Faculty
+        myApps = apps.filter(a => a.facultyId === currentUser.id);
+        
+        if(myApps.length === 0) {
+            container.innerHTML = '<p style="color:#666;">No incoming requests at the moment.</p>';
+            return;
+        }
+
+        myApps.reverse().forEach(app => {
+            let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            
+            let actionButtons = '';
+            if(app.status === 'Pending') {
+                actionButtons = `
+                    <button class="btn-success" onclick="updateApptStatus('${app.id}', 'Approved')">Accept</button>
+                    <button class="btn-danger" onclick="updateApptStatus('${app.id}', 'Rejected')">Decline</button>
+                `;
+            }
+
+            container.innerHTML += `
+                <div class="appt-card">
+                    <div class="appt-info">
+                        <h4>Request from ${app.studentName} (${app.studentId})</h4>
+                        <p><strong>Slot:</strong> 🕒 ${app.timeSlot}</p>
+                        <p><strong>Topic:</strong> ${app.purpose}</p>
+                        <p><em>"${app.message}"</em></p>
+                    </div>
+                    <div class="fac-actions" style="display:flex; align-items:center; gap:10px;">
+                        <span class="badge-status ${badgeClass}">${app.status}</span>
+                        ${actionButtons}
+                    </div>
+                </div>
+            `;
+        });
+    }
+}
+
+function updateApptStatus(appId, newStatus) {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let index = db.appointments.findIndex(a => a.id === appId);
+    if(index > -1) {
+        db.appointments[index].status = newStatus;
+        localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+        renderAppointments(); // Re-render the list immediately
+    }
+}
+
+
+// --- SCHEDULE EXTRACTION & MATRIX MANAGEMENT ---
+function processFFCSUpload(input) {
+    if(!input.files || input.files.length === 0) return;
+    const statusText = document.getElementById('uploadStatus');
+    statusText.style.display = 'block';
+    
+    let steps = ["⏳ Reading metadata...", "⚙️ Running OCR...", "✅ Extraction complete!"];
+    let stepCount = 0;
+    statusText.innerHTML = steps[stepCount];
+    
+    let interval = setInterval(() => {
+        stepCount++;
+        if (stepCount < steps.length) { statusText.innerHTML = steps[stepCount]; } 
+        else {
+            clearInterval(interval);
+            autoPopulateExtractedSchedule();
+            setTimeout(() => { statusText.style.display = 'none'; input.value = ''; }, 2000);
+        }
+    }, 800); 
+}
+
+function autoPopulateExtractedSchedule() {
+    const dummySubjects = ["CSE2001", "MAT1011", "PHY1701", "ENG1901"];
+    days.forEach(day => {
+        for(let i = 0; i < timeSlotsLabels.length; i++) {
+            if(i !== 3) {
+                const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
+                input.value = (Math.random() > 0.5) ? "" : dummySubjects[Math.floor(Math.random() * dummySubjects.length)];
+            }
+        }
+    });
+    saveSchedule();
+}
+
+function generateScheduleTable() {
+    const tbody = document.getElementById('scheduleBody');
+    tbody.innerHTML = ''; 
+    days.forEach(day => {
+        const tr = document.createElement('tr');
+        let html = `<td><strong>${day}</strong></td>`;
+        for(let i=0; i < timeSlotsLabels.length; i++) {
+            if(i === 3) {
+                html += `<td><input type="text" value="Break" class="slot-input" data-day="${day}" data-index="${i}" readonly style="background:#f1f5f9; border:none; color:#94a3b8;"></td>`;
+            } else {
+                html += `<td><input type="text" placeholder="Free" class="slot-input" data-day="${day}" data-index="${i}"></td>`;
+            }
+        }
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    });
+}
+
+function saveSchedule() {
+    if(!currentUser) return;
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let mySchedule = {};
+    
+    days.forEach(day => {
+        mySchedule[day] = [];
+        for(let i=0; i < timeSlotsLabels.length; i++) {
+            const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
+            let val = input.value.trim();
+            if(val === "") val = "Free"; 
+            mySchedule[day].push(val);
+        }
+    });
+
+    db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role, schedule: mySchedule };
+    localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+    
+    const resultDiv = document.getElementById('saveResult');
+    resultDiv.style.display = 'block';
+    setTimeout(() => resultDiv.style.display = 'none', 3000);
+}
+
+function loadSchedule() {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    if(db[currentUser.id] && db[currentUser.id].schedule) {
+        const mySchedule = db[currentUser.id].schedule;
+        days.forEach(day => {
+            for(let i=0; i < timeSlotsLabels.length; i++) {
+                if(i !== 3) { 
+                    const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
+                    input.value = (mySchedule[day][i].toLowerCase() === "free") ? "" : mySchedule[day][i];
+                }
+            }
+        });
+    }
+}
+
+function clearSchedule() {
+    document.querySelectorAll('.slot-input:not([readonly])').forEach(input => input.value = '');
+}
+
+// --- SEARCH & SMART MATCHING ---
+function searchFaculty() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '';
+    
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let matches = [];
+    
+    for(let key in db) {
+        if(db[key].role === 'Faculty' && key !== 'appointments' && db[key].name.toLowerCase().includes(query)) {
+            matches.push(db[key]);
+        }
+    }
+
+    if (matches.length === 0) {
+        resultsContainer.innerHTML = '<p class="no-results">No faculty found matching that name.</p>';
+        return;
+    }
+
+    matches.forEach(teacher => {
+        const card = document.createElement('div');
+        card.className = 'card profile';
+        card.innerHTML = `
+            <h3 style="margin-top: 0;">👩‍🏫 ${teacher.name}</h3>
+            <p style="margin: 5px 0; font-size: 14px;"><strong>ID:</strong> ${teacher.id}</p>
+            <p class="green" style="margin: 15px 0;">Live Override Active</p>
+            <button onclick="fillFaculty('${teacher.name}', '${teacher.id}')">Select for Booking</button>
+        `;
+        resultsContainer.appendChild(card);
+    });
+}
+
+function handleSearch(event) { if (event.key === 'Enter') searchFaculty(); }
+function scrollToSearch(){ document.getElementById('faculty').scrollIntoView({behavior:'smooth'}); }
+function scrollToBook(){ document.getElementById('booking').scrollIntoView({behavior:'smooth'}); }
+
+function fillFaculty(name, id){
+    document.getElementById('facultyName').value = name;
+    document.getElementById('facultyId').value = id;
+    document.getElementById('findSlotBtn').style.display = 'block';
+    document.getElementById('smartMatchBox').style.display = 'none'; 
+    document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Click Find Mutual Free Time --</option>';
+    scrollToBook();
+}
+
+function isFree(statusStr) {
+    return statusStr.toLowerCase() === "free" || statusStr === "";
+}
+
+function findMutualSlots() {
+    if(!currentUser) {
+        alert("⚠️ Session expired. Please log in again.");
+        showView('portalView');
+        return;
+    }
+    
+    const facId = document.getElementById('facultyId').value;
+    if(!facId) return;
+
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    
+    if(!db[currentUser.id] || !db[currentUser.id].schedule) {
+        alert("⚠️ Please go to your Dashboard and Save your schedule first!");
+        showView('dashboardView');
+        return;
+    }
+
+    const studentSchedule = db[currentUser.id].schedule;
+    const facultySchedule = db[facId].schedule;
+    let mutualSlots = []; 
+    
+    days.forEach(day => {
+        for(let i=0; i < timeSlotsLabels.length; i++) {
+            if(i === 3) continue; 
+            
+            if(isFree(studentSchedule[day][i]) && isFree(facultySchedule[day][i])) {
+                mutualSlots.push(`${day} | ${timeSlotsLabels[i]}`);
+            }
+        }
+    });
+
+    const dropdown = document.getElementById('timeSlotDropdown');
+    dropdown.innerHTML = ''; 
+    const matchBox = document.getElementById('smartMatchBox');
+    
+    if(mutualSlots.length === 0) {
+        matchBox.style.display = 'block';
+        matchBox.style.borderColor = '#dc2626';
+        matchBox.style.backgroundColor = '#fef2f2';
+        document.getElementById('matchDetails').innerHTML = `<span style="color:#dc2626;">No mutual free slots found this week.</span>`;
+        dropdown.innerHTML = '<option value="">No overlapping time found</option>';
+    } else {
+        matchBox.style.display = 'block';
+        matchBox.style.borderColor = '#f59e0b';
+        matchBox.style.backgroundColor = '#fef3c7';
+        document.getElementById('matchDetails').innerHTML = `Earliest Slot: 🕒 ${mutualSlots[0]}`;
+        
+        mutualSlots.forEach(slot => {
+            let opt = document.createElement('option');
+            opt.value = slot;
+            opt.textContent = slot;
+            dropdown.appendChild(opt);
+        });
+    }
+}
+</script>
+</body>
+</html>
