@@ -1,5 +1,3 @@
-#Faculty Finder 
-
 🎓 Faculty Finder Pro (FFCS Edition)
 Eliminating the endless wait outside faculty cabins through Smart OCR Matrix Matching & Live Status Tracking.
 
@@ -74,10 +72,11 @@ Hardware Integration: Integrate RFID/Biometric sensors at cabin doors to automat
 Email & SMS Alerts: Automated notifications when an appointment is approved or rescheduled.
 
 👨‍💻 Team
-[Your Name] - Role (e.g., Full Stack Developer / UI-UX) - [GitHub/LinkedIn link]
 
-[Team Member 2 Name] - Role - [GitHub/LinkedIn link]
+Jay Modha - Team Lead - https://www.linkedin.com/in/jay-modha-5a9904376/ 
+Ruddransh Bhardwaj - Full Stack Developer / UI-UX - Linkedin -https://www.linkedin.com/in/ruddransh-bhardwaj/ 
+Yash Sharma -  - https://www.linkedin.com/in/yash-vashisth-8609b1341/ 
+Aditya Raj - Contributor - https://www.linkedin.com/in/aditya-jha-684b32324/ 
+Deep Jaiswal - Contributor - https://www.linkedin.com/in/deep-jaiswal-0996a3383/ 
 
-[Team Member 3 Name] - Role - [GitHub/LinkedIn link]
-
-Built with ❤️ at [Hackathon Name / Year]
+Built with ❤️ at [Summer of CodeFest 2.0 / 2026]
