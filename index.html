@@ -23,7 +23,7 @@ button:hover{opacity:0.9;}
 
 /* ================= CLEAN PORTAL STYLES ================= */
 .portal-centered { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6f9; text-align: center; padding: 20px; }
-.portal-centered h1 { font-size: 32px; color: #1b5b97; margin-bottom: 10px; font-family: 'Times New Roman', Times, serif;}
+.portal-centered h1 { font-size: 32px; color: #1b5b97; margin-bottom: 10px; font-family: Inter, Arial, sans-serif; font-weight: bold;}
 .portal-centered p { color: #666; margin-bottom: 40px; }
 
 .vit-cards-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
@@ -78,9 +78,9 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 .appt-info h4 { margin: 0 0 5px 0; }
 .appt-info p { margin: 2px 0; font-size: 13px; color: #555; }
 .badge-status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-.status-pending { background: #fef3c7; color: #b45309; }
-.status-approved { background: #dcfce7; color: #16a34a; }
-.status-rejected { background: #fee2e2; color: #dc2626; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-approved { background: #dcfce7; color: #166534; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
 .fac-actions button { margin-left: 5px; padding: 6px 12px; font-size: 12px;}
 
 /* Login Portal */
@@ -123,7 +123,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
     <nav id="mainNav">
         <a onclick="showView('homeView')">Home</a>
         <a onclick="showView('portalView')">Main Portal</a>
-        <a onclick="showView('homeView')">Search</a>
+        <a onclick="showView('homeView'); scrollToSearch();">Search</a>
         <button class="btn-primary" id="loginBtn" onclick="showView('dashboardView')">My Dashboard</button>
     </nav>
 </header>
@@ -131,11 +131,11 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 <!-- ================= 2. LOGIN FORM VIEW ================= -->
 <div id="loginView" class="view-section">
     <div class="login-container">
-        <button onclick="showView('portalView')" style="background:transparent; color:#666; padding:0; margin-bottom:15px; font-weight:normal;">← Back to Role Selection</button>
+        <button onclick="showView('portalView')" style="background:transparent; color:#666; padding:0; margin-bottom:15px; font-weight:normal; border:none; cursor:pointer;">← Back to Role Selection</button>
         <h2>Secure Login</h2>
         <form onsubmit="processLogin(event)">
             <label>Selected Role</label>
-            <select id="userRole" required style="background:#f1f5f9; pointer-events:none;">
+            <select id="userRole" required style="background:#f1f5f9;">
                 <option value="Student">Student</option>
                 <option value="Faculty">Faculty (Employee)</option>
             </select>
@@ -166,20 +166,21 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
             <h3>System Status</h3>
             <div class="row"><span>📄 Sync Matrix</span><span class="green">Active</span></div>
             <div class="row"><span>📅 Live Override</span><span class="green">Active</span></div>
-            <div class="row"><span>👨‍🏫 Dr. Sharma</span><span>Free 2:00 PM</span></div>
+            <div class="row"><span>👨‍🏫 Dr. Anjali Sharma</span><span class="green">Free 2:00 PM</span></div>
         </div>
     </section>
 
     <section id="faculty" class="content-section">
         <div class="search-wrapper">
             <h2>Search Faculty</h2>
+            <p style="color:#666; font-size:14px; margin-top:-5px; margin-bottom:15px;">Search by Name, Department, ID, or Cabin Room</p>
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="e.g. 'Sharma' or 'Anjali'..." onkeyup="handleSearch(event)">
+                <input type="text" id="searchInput" placeholder="e.g. 'Sharma', 'Computer Science', or 'C-204'..." onkeyup="handleSearch(event)">
                 <button onclick="searchFaculty()">Search</button>
             </div>
         </div>
         <div id="searchResults" class="grid">
-            <p class="no-results">Enter a name above to search for faculty members.</p>
+            <p class="no-results">Enter a search term above to browse faculty members.</p>
         </div>
     </section>
 
@@ -209,6 +210,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
                     <option>Project Guidance</option>
                     <option>Assignment Discussion</option>
                     <option>Research / Doubt Clearing</option>
+                    <option>General Academic Query</option>
                 </select>
                 <label>Message</label>
                 <textarea id="bookingMessage" placeholder="Describe your request..."></textarea>
@@ -309,14 +311,26 @@ window.onload = function() {
     checkActiveSession();
 };
 
+// --- SECURITY UTILITY: ESCAPE HTML TO PREVENT XSS ---
+function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    }[tag] || tag));
+}
+
 function initMockDB() {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
     if (!db) { 
         db = { appointments: [] }; 
     }
-    if (!db.appointments) db.appointments = []; // Ensure appointments array exists
+    if (!db.appointments) db.appointments = [];
 
-    // Pre-feed Faculty Database
+    // Pre-feed Sample Faculty Members
     if (!db['EMP001']) {
         db['EMP001'] = {
             id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', room: 'C-204',
@@ -329,6 +343,33 @@ function initMockDB() {
             }
         };
     }
+
+    if (!db['EMP002']) {
+        db['EMP002'] = {
+            id: 'EMP002', name: 'Dr. Rajesh Kumar', role: 'Faculty', dept: 'Information Technology', room: 'AB1-302',
+            schedule: {
+                "Monday": ["Free", "IT2004", "Free", "Break", "Meeting", "Free", "Free"],
+                "Tuesday": ["IT1002", "Free", "Free", "Break", "IT2004", "Free", "Research"],
+                "Wednesday": ["Free", "IT1002", "Free", "Break", "Free", "Meeting", "Free"],
+                "Thursday": ["Free", "Free", "IT2004", "Break", "IT1002", "Free", "Free"],
+                "Friday": ["Research", "Free", "Free", "Break", "Free", "IT2004", "Free"]
+            }
+        };
+    }
+
+    if (!db['EMP003']) {
+        db['EMP003'] = {
+            id: 'EMP003', name: 'Dr. Priya Nair', role: 'Faculty', dept: 'Electronics & Comm.', room: 'TT-512',
+            schedule: {
+                "Monday": ["ECE3001", "ECE3001", "Free", "Break", "Free", "Free", "Meeting"],
+                "Tuesday": ["Free", "Free", "ECE3001", "Break", "ECE2002", "Free", "Free"],
+                "Wednesday": ["Free", "ECE2002", "Free", "Break", "Free", "ECE3001", "Free"],
+                "Thursday": ["Meeting", "Free", "Free", "Break", "Free", "Free", "Research"],
+                "Friday": ["Free", "ECE3001", "Free", "Break", "ECE2002", "Free", "Free"]
+            }
+        };
+    }
+
     localStorage.setItem('facultyFinderDB', JSON.stringify(db));
 }
 
@@ -336,9 +377,14 @@ function initMockDB() {
 function checkActiveSession() {
     const savedSession = localStorage.getItem('activeSession');
     if (savedSession) {
-        currentUser = JSON.parse(savedSession);
-        setupDashboardUI(); // Setup based on role
-        showView('homeView'); 
+        try {
+            currentUser = JSON.parse(savedSession);
+            setupDashboardUI(); 
+            showView('homeView'); 
+        } catch(e) {
+            localStorage.removeItem('activeSession');
+            showView('portalView');
+        }
     } else {
         showView('portalView');
     }
@@ -347,7 +393,8 @@ function checkActiveSession() {
 // --- VIEW ROUTING ---
 function showView(viewId) {
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
-    document.getElementById(viewId).classList.add('active-view');
+    const target = document.getElementById(viewId);
+    if(target) target.classList.add('active-view');
     
     const appHeader = document.getElementById('mainAppHeader');
     if(viewId === 'portalView' || viewId === 'loginView') {
@@ -357,7 +404,7 @@ function showView(viewId) {
     }
 
     if(viewId === 'dashboardView' && currentUser) {
-        renderAppointments(); // Refresh appointments whenever dashboard opens
+        renderAppointments(); 
     }
 }
 
@@ -369,14 +416,17 @@ function goToLogin(role) {
 
 function processLogin(event) {
     event.preventDefault();
-    const regNo = document.getElementById('regNo').value.toUpperCase();
-    const name = document.getElementById('userName').value;
+    const regNo = document.getElementById('regNo').value.toUpperCase().trim();
+    const name = document.getElementById('userName').value.trim();
     const role = document.getElementById('userRole').value;
     
+    if(!regNo || !name) return;
+
     currentUser = { id: regNo, name: name, role: role };
     localStorage.setItem('activeSession', JSON.stringify(currentUser)); 
     
     setupDashboardUI();
+    searchFaculty();
     showView('homeView'); 
 }
 
@@ -386,8 +436,9 @@ function logout() {
     showView('portalView');
 }
 
-// --- DYNAMIC DASHBOARD SETUP (Role Distinction) ---
+// --- DYNAMIC DASHBOARD SETUP ---
 function setupDashboardUI() {
+    if (!currentUser) return;
     document.getElementById('userNameDisplay').textContent = `Welcome, ${currentUser.name}`;
     document.getElementById('userRoleDisplay').textContent = `Role: ${currentUser.role} | ID: ${currentUser.id}`;
     
@@ -425,14 +476,15 @@ function bookAppointment() {
     const purpose = document.getElementById('bookingPurpose').value;
     const message = document.getElementById('bookingMessage').value;
     
-    if(!faculty) { alert("Please select a faculty member first!"); return; }
+    if(!faculty || !facId) { alert("Please search and select a faculty member first!"); return; }
     if(!slot || slot.includes("run Smart Match") || slot.includes("No overlapping")) {
         alert("Please run Smart Match and select a valid mutual time slot!");
         return;
     }
 
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
-    
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || { appointments: [] };
+    if(!db.appointments) db.appointments = [];
+
     const newAppt = {
         id: 'APT' + Date.now(),
         studentId: currentUser.id,
@@ -457,7 +509,7 @@ function bookAppointment() {
 }
 
 function renderAppointments() {
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     let apps = db.appointments || [];
     let container = document.getElementById('appointmentsList');
     container.innerHTML = '';
@@ -472,16 +524,26 @@ function renderAppointments() {
             return;
         }
 
-        myApps.reverse().forEach(app => {
+        myApps.slice().reverse().forEach(app => {
             let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            
+            let downloadBtn = '';
+            if(app.status === 'Approved') {
+                downloadBtn = `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>`;
+            }
+
             container.innerHTML += `
                 <div class="appt-card">
                     <div class="appt-info">
-                        <h4>Meeting with ${app.facultyName}</h4>
-                        <p><strong>Slot:</strong> 🕒 ${app.timeSlot}</p>
-                        <p><strong>Purpose:</strong> ${app.purpose}</p>
+                        <h4>Meeting with ${escapeHTML(app.facultyName)}</h4>
+                        <p><strong>Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                        <p><strong>Purpose:</strong> ${escapeHTML(app.purpose)}</p>
+                        ${app.message ? `<p><em>"${escapeHTML(app.message)}"</em></p>` : ''}
                     </div>
-                    <div><span class="badge-status ${badgeClass}">${app.status}</span></div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
+                        ${downloadBtn}
+                    </div>
                 </div>
             `;
         });
@@ -493,7 +555,7 @@ function renderAppointments() {
             return;
         }
 
-        myApps.reverse().forEach(app => {
+        myApps.slice().reverse().forEach(app => {
             let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
             
             let actionButtons = '';
@@ -502,18 +564,20 @@ function renderAppointments() {
                     <button class="btn-success" onclick="updateApptStatus('${app.id}', 'Approved')">Accept</button>
                     <button class="btn-danger" onclick="updateApptStatus('${app.id}', 'Rejected')">Decline</button>
                 `;
+            } else if(app.status === 'Approved') {
+                actionButtons = `<button class="btn-primary" style="font-size:12px; padding:5px 10px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>`;
             }
 
             container.innerHTML += `
                 <div class="appt-card">
                     <div class="appt-info">
-                        <h4>Request from ${app.studentName} (${app.studentId})</h4>
-                        <p><strong>Slot:</strong> 🕒 ${app.timeSlot}</p>
-                        <p><strong>Topic:</strong> ${app.purpose}</p>
-                        <p><em>"${app.message}"</em></p>
+                        <h4>Request from ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
+                        <p><strong>Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                        <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
+                        ${app.message ? `<p><em>"${escapeHTML(app.message)}"</em></p>` : ''}
                     </div>
-                    <div class="fac-actions" style="display:flex; align-items:center; gap:10px;">
-                        <span class="badge-status ${badgeClass}">${app.status}</span>
+                    <div class="fac-actions" style="display:flex; align-items:center; gap:8px;">
+                        <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
                         ${actionButtons}
                     </div>
                 </div>
@@ -523,15 +587,42 @@ function renderAppointments() {
 }
 
 function updateApptStatus(appId, newStatus) {
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    if(!db.appointments) return;
+
     let index = db.appointments.findIndex(a => a.id === appId);
     if(index > -1) {
         db.appointments[index].status = newStatus;
         localStorage.setItem('facultyFinderDB', JSON.stringify(db));
-        renderAppointments(); // Re-render the list immediately
+        renderAppointments(); 
     }
 }
 
+function exportApptICS(appId) {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    let app = (db.appointments || []).find(a => a.id === appId);
+    if(!app) return;
+
+    const icsData = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Faculty Finder Pro//EN",
+        "BEGIN:VEVENT",
+        `SUMMARY:Academic Meeting - ${app.purpose}`,
+        `DESCRIPTION:Meeting between ${app.studentName} and ${app.facultyName}. Slot: ${app.timeSlot}`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR"
+    ].join("\r\n");
+
+    const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', `appointment_${app.id}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
 // --- SCHEDULE EXTRACTION & MATRIX MANAGEMENT ---
 function processFFCSUpload(input) {
@@ -539,7 +630,7 @@ function processFFCSUpload(input) {
     const statusText = document.getElementById('uploadStatus');
     statusText.style.display = 'block';
     
-    let steps = ["⏳ Reading metadata...", "⚙️ Running OCR...", "✅ Extraction complete!"];
+    let steps = ["⏳ Reading metadata...", "⚙️ Running OCR extraction...", "✅ Extraction complete!"];
     let stepCount = 0;
     statusText.innerHTML = steps[stepCount];
     
@@ -551,16 +642,16 @@ function processFFCSUpload(input) {
             autoPopulateExtractedSchedule();
             setTimeout(() => { statusText.style.display = 'none'; input.value = ''; }, 2000);
         }
-    }, 800); 
+    }, 700); 
 }
 
 function autoPopulateExtractedSchedule() {
-    const dummySubjects = ["CSE2001", "MAT1011", "PHY1701", "ENG1901"];
+    const dummySubjects = ["CSE2001", "MAT1011", "PHY1701", "ENG1901", "CSE3002"];
     days.forEach(day => {
         for(let i = 0; i < timeSlotsLabels.length; i++) {
             if(i !== 3) {
                 const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-                input.value = (Math.random() > 0.5) ? "" : dummySubjects[Math.floor(Math.random() * dummySubjects.length)];
+                if(input) input.value = (Math.random() > 0.4) ? "" : dummySubjects[Math.floor(Math.random() * dummySubjects.length)];
             }
         }
     });
@@ -569,6 +660,7 @@ function autoPopulateExtractedSchedule() {
 
 function generateScheduleTable() {
     const tbody = document.getElementById('scheduleBody');
+    if(!tbody) return;
     tbody.innerHTML = ''; 
     days.forEach(day => {
         const tr = document.createElement('tr');
@@ -587,36 +679,44 @@ function generateScheduleTable() {
 
 function saveSchedule() {
     if(!currentUser) return;
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     let mySchedule = {};
     
     days.forEach(day => {
         mySchedule[day] = [];
         for(let i=0; i < timeSlotsLabels.length; i++) {
             const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-            let val = input.value.trim();
+            let val = input ? input.value.trim() : "";
             if(val === "") val = "Free"; 
             mySchedule[day].push(val);
         }
     });
 
-    db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role, schedule: mySchedule };
+    if(!db[currentUser.id]) {
+        db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
+    }
+    db[currentUser.id].schedule = mySchedule;
     localStorage.setItem('facultyFinderDB', JSON.stringify(db));
     
     const resultDiv = document.getElementById('saveResult');
-    resultDiv.style.display = 'block';
-    setTimeout(() => resultDiv.style.display = 'none', 3000);
+    if(resultDiv) {
+        resultDiv.style.display = 'block';
+        setTimeout(() => resultDiv.style.display = 'none', 3000);
+    }
 }
 
 function loadSchedule() {
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    if(!currentUser) return;
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     if(db[currentUser.id] && db[currentUser.id].schedule) {
         const mySchedule = db[currentUser.id].schedule;
         days.forEach(day => {
             for(let i=0; i < timeSlotsLabels.length; i++) {
-                if(i !== 3) { 
+                if(i !== 3 && mySchedule[day] && mySchedule[day][i]) { 
                     const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-                    input.value = (mySchedule[day][i].toLowerCase() === "free") ? "" : mySchedule[day][i];
+                    if(input) {
+                        input.value = (mySchedule[day][i].toLowerCase() === "free") ? "" : mySchedule[day][i];
+                    }
                 }
             }
         });
@@ -624,26 +724,37 @@ function loadSchedule() {
 }
 
 function clearSchedule() {
-    document.querySelectorAll('.slot-input:not([readonly])').forEach(input => input.value = '');
+    if (confirm("Are you sure you want to clear all slots in your schedule matrix?")) {
+        document.querySelectorAll('.slot-input:not([readonly])').forEach(input => input.value = '');
+    }
 }
 
 // --- SEARCH & SMART MATCHING ---
 function searchFaculty() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
     const resultsContainer = document.getElementById('searchResults');
+    if(!resultsContainer) return;
     resultsContainer.innerHTML = '';
     
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     let matches = [];
     
     for(let key in db) {
-        if(db[key].role === 'Faculty' && key !== 'appointments' && db[key].name.toLowerCase().includes(query)) {
-            matches.push(db[key]);
+        if(key !== 'appointments' && db[key] && db[key].role === 'Faculty') {
+            const fac = db[key];
+            const nameMatch = fac.name && fac.name.toLowerCase().includes(query);
+            const deptMatch = fac.dept && fac.dept.toLowerCase().includes(query);
+            const roomMatch = fac.room && fac.room.toLowerCase().includes(query);
+            const idMatch = fac.id && fac.id.toLowerCase().includes(query);
+
+            if(query === '' || nameMatch || deptMatch || roomMatch || idMatch) {
+                matches.push(fac);
+            }
         }
     }
 
     if (matches.length === 0) {
-        resultsContainer.innerHTML = '<p class="no-results">No faculty found matching that name.</p>';
+        resultsContainer.innerHTML = '<p class="no-results">No faculty found matching that query.</p>';
         return;
     }
 
@@ -651,18 +762,26 @@ function searchFaculty() {
         const card = document.createElement('div');
         card.className = 'card profile';
         card.innerHTML = `
-            <h3 style="margin-top: 0;">👩‍🏫 ${teacher.name}</h3>
-            <p style="margin: 5px 0; font-size: 14px;"><strong>ID:</strong> ${teacher.id}</p>
-            <p class="green" style="margin: 15px 0;">Live Override Active</p>
-            <button onclick="fillFaculty('${teacher.name}', '${teacher.id}')">Select for Booking</button>
+            <h3 style="margin-top: 0;">👩‍🏫 ${escapeHTML(teacher.name)}</h3>
+            <p style="margin: 4px 0; font-size: 14px;"><strong>ID:</strong> ${escapeHTML(teacher.id)}</p>
+            <p style="margin: 4px 0; font-size: 14px;"><strong>Dept:</strong> ${escapeHTML(teacher.dept || 'Academic')}</p>
+            <p style="margin: 4px 0; font-size: 14px;"><strong>Cabin:</strong> ${escapeHTML(teacher.room || 'Main Block')}</p>
+            <p class="green" style="margin: 12px 0;">Live Override Active</p>
+            <button onclick="fillFaculty('${escapeHTML(teacher.name)}', '${escapeHTML(teacher.id)}')">Select for Booking</button>
         `;
         resultsContainer.appendChild(card);
     });
 }
 
 function handleSearch(event) { if (event.key === 'Enter') searchFaculty(); }
-function scrollToSearch(){ document.getElementById('faculty').scrollIntoView({behavior:'smooth'}); }
-function scrollToBook(){ document.getElementById('booking').scrollIntoView({behavior:'smooth'}); }
+function scrollToSearch(){ 
+    const el = document.getElementById('faculty');
+    if(el) el.scrollIntoView({behavior:'smooth'}); 
+}
+function scrollToBook(){ 
+    const el = document.getElementById('booking');
+    if(el) el.scrollIntoView({behavior:'smooth'}); 
+}
 
 function fillFaculty(name, id){
     document.getElementById('facultyName').value = name;
@@ -674,7 +793,9 @@ function fillFaculty(name, id){
 }
 
 function isFree(statusStr) {
-    return statusStr.toLowerCase() === "free" || statusStr === "";
+    if (!statusStr) return true;
+    const clean = statusStr.toString().trim().toLowerCase();
+    return clean === "free" || clean === "" || clean.includes("free");
 }
 
 function findMutualSlots() {
@@ -685,9 +806,12 @@ function findMutualSlots() {
     }
     
     const facId = document.getElementById('facultyId').value;
-    if(!facId) return;
+    if(!facId) {
+        alert("Please select a faculty member first.");
+        return;
+    }
 
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
     
     if(!db[currentUser.id] || !db[currentUser.id].schedule) {
         alert("⚠️ Please go to your Dashboard and Save your schedule first!");
@@ -695,16 +819,34 @@ function findMutualSlots() {
         return;
     }
 
-    const studentSchedule = db[currentUser.id].schedule;
-    const facultySchedule = db[facId].schedule;
+    const studentSchedule = db[currentUser.id].schedule || {};
+    const facultyObj = db[facId] || {};
+    const facultySchedule = facultyObj.schedule || {};
+    const appointments = db.appointments || [];
+
+    // Lock out slots already approved for this faculty
+    const bookedSlots = new Set();
+    appointments.forEach(app => {
+        if(app.facultyId === facId && app.status === 'Approved') {
+            bookedSlots.add(app.timeSlot);
+        }
+    });
+
     let mutualSlots = []; 
     
     days.forEach(day => {
+        const studentDay = studentSchedule[day] || [];
+        const facultyDay = facultySchedule[day] || [];
+
         for(let i=0; i < timeSlotsLabels.length; i++) {
             if(i === 3) continue; 
             
-            if(isFree(studentSchedule[day][i]) && isFree(facultySchedule[day][i])) {
-                mutualSlots.push(`${day} | ${timeSlotsLabels[i]}`);
+            const sStatus = studentDay[i] || "Free";
+            const fStatus = facultyDay[i] || "Free";
+            const slotLabel = `${day} | ${timeSlotsLabels[i]}`;
+
+            if(isFree(sStatus) && isFree(fStatus) && !bookedSlots.has(slotLabel)) {
+                mutualSlots.push(slotLabel);
             }
         }
     });
@@ -723,7 +865,7 @@ function findMutualSlots() {
         matchBox.style.display = 'block';
         matchBox.style.borderColor = '#f59e0b';
         matchBox.style.backgroundColor = '#fef3c7';
-        document.getElementById('matchDetails').innerHTML = `Earliest Slot: 🕒 ${mutualSlots[0]}`;
+        document.getElementById('matchDetails').innerHTML = `Earliest Slot: 🕒 ${escapeHTML(mutualSlots[0])}`;
         
         mutualSlots.forEach(slot => {
             let opt = document.createElement('option');
