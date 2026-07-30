@@ -1,3 +1,10 @@
+Here is your **complete, final updated HTML code** for **Faculty Finder Pro** (`index.html`).
+
+This file includes:
+1. **VIT Bhopal (VTOP) Timetable Matrix**: Exact match for your 8 timing columns (`08:30-10:00`, `10:05-11:35`, `11:40-01:10`, `Lunch`, `01:15-02:45`, `02:50-04:20`, `04:25-05:55`, `06:00-07:30`) and 6 days (**Monday to Saturday**).
+2. **All Bug Fixes & Protection**: XSS security escaping (`escapeHTML`), double-booking prevention, safe session handling, scroll navigation, multi-attribute search (Name, Dept, Room, ID), and 1-click **Add to Calendar (.ics download)**.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,9 +75,9 @@ input,select,textarea{width:100%;padding:11px;margin:8px 0 16px;border:1px solid
 .dashboard-header { background: #fff; padding: 30px 8%; margin-bottom: 30px; border-bottom: 1px solid #ddd; display:flex; justify-content: space-between; align-items:center;}
 .dashboard-header h2 { margin: 0; }
 .schedule-container { overflow-x: auto; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.05); margin-bottom: 30px;}
-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
 th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-th { background: #f8fafc; color: #333; font-size:14px;}
+th { background: #f8fafc; color: #333; font-size:13px;}
 td input { margin: 0; padding: 8px; width: 100%; border: 1px dashed #ccc; background: transparent; text-align: center; font-size:13px; font-weight:600; color:#1e40af;}
 td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none; }
 
@@ -281,6 +288,7 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
                         <th>08:30 - 10:00</th>
                         <th>10:05 - 11:35</th>
                         <th>11:40 - 01:10</th>
+                        <th>Lunch</th>
                         <th>01:15 - 02:45</th>
                         <th>02:50 - 04:20</th>
                         <th>04:25 - 05:55</th>
@@ -303,8 +311,8 @@ td input:focus { border: 1px solid var(--p); background: #f0f6ff; outline: none;
 <script>
 // --- GLOBAL VARIABLES & ON-LOAD LOGIC ---
 let currentUser = null; 
-const timeSlotsLabels = ["08:30 - 10:00", "10:05 - 11:35", "11:40 - 01:10", "01:15 - 02:45", "02:50 - 04:20", "04:25 - 05:55", "06:00 - 07:30"];
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const timeSlotsLabels = ["08:30 - 10:00", "10:05 - 11:35", "11:40 - 01:10", "Lunch", "01:15 - 02:45", "02:50 - 04:20", "04:25 - 05:55", "06:00 - 07:30"];
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 window.onload = function() {
     initMockDB();
@@ -330,16 +338,17 @@ function initMockDB() {
     }
     if (!db.appointments) db.appointments = [];
 
-    // Pre-feed Sample Faculty Members
+    // Pre-feed Sample Faculty Members with VIT Bhopal Matrix
     if (!db['EMP001']) {
         db['EMP001'] = {
             id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', room: 'C-204',
             schedule: {
-                "Monday": ["CSE1001", "Free", "Free", "Break", "CSE2005", "Free", "Research"],
-                "Tuesday": ["Free", "CSE1001", "Meeting", "Break", "Free", "CSE3002", "CSE3002"],
-                "Wednesday": ["Free", "Free", "CSE2005", "Break", "CSE1001", "Free", "Free"],
-                "Thursday": ["Research", "CSE3002", "CSE3002", "Break", "Free", "Free", "Meeting"],
-                "Friday": ["Free", "Meeting", "CSE1001", "Break", "Free", "CSE2005", "Free"]
+                "Monday": ["CSE1001", "Free", "Free", "Lunch", "CSE2005", "Free", "Research", "Free"],
+                "Tuesday": ["Free", "CSE1001", "Meeting", "Lunch", "Free", "CSE3002", "CSE3002", "Free"],
+                "Wednesday": ["Free", "Free", "CSE2005", "Lunch", "CSE1001", "Free", "Free", "Free"],
+                "Thursday": ["Research", "CSE3002", "CSE3002", "Lunch", "Free", "Free", "Meeting", "Free"],
+                "Friday": ["Free", "Meeting", "CSE1001", "Lunch", "Free", "CSE2005", "Free", "Free"],
+                "Saturday": ["Free", "Free", "Research", "Lunch", "Free", "Free", "Free", "Free"]
             }
         };
     }
@@ -348,11 +357,12 @@ function initMockDB() {
         db['EMP002'] = {
             id: 'EMP002', name: 'Dr. Rajesh Kumar', role: 'Faculty', dept: 'Information Technology', room: 'AB1-302',
             schedule: {
-                "Monday": ["Free", "IT2004", "Free", "Break", "Meeting", "Free", "Free"],
-                "Tuesday": ["IT1002", "Free", "Free", "Break", "IT2004", "Free", "Research"],
-                "Wednesday": ["Free", "IT1002", "Free", "Break", "Free", "Meeting", "Free"],
-                "Thursday": ["Free", "Free", "IT2004", "Break", "IT1002", "Free", "Free"],
-                "Friday": ["Research", "Free", "Free", "Break", "Free", "IT2004", "Free"]
+                "Monday": ["Free", "IT2004", "Free", "Lunch", "Meeting", "Free", "Free", "Free"],
+                "Tuesday": ["IT1002", "Free", "Free", "Lunch", "IT2004", "Free", "Research", "Free"],
+                "Wednesday": ["Free", "IT1002", "Free", "Lunch", "Free", "Meeting", "Free", "Free"],
+                "Thursday": ["Free", "Free", "IT2004", "Lunch", "IT1002", "Free", "Free", "Free"],
+                "Friday": ["Research", "Free", "Free", "Lunch", "Free", "IT2004", "Free", "Free"],
+                "Saturday": ["Free", "IT2004", "Free", "Lunch", "Free", "Free", "Free", "Free"]
             }
         };
     }
@@ -361,11 +371,12 @@ function initMockDB() {
         db['EMP003'] = {
             id: 'EMP003', name: 'Dr. Priya Nair', role: 'Faculty', dept: 'Electronics & Comm.', room: 'TT-512',
             schedule: {
-                "Monday": ["ECE3001", "ECE3001", "Free", "Break", "Free", "Free", "Meeting"],
-                "Tuesday": ["Free", "Free", "ECE3001", "Break", "ECE2002", "Free", "Free"],
-                "Wednesday": ["Free", "ECE2002", "Free", "Break", "Free", "ECE3001", "Free"],
-                "Thursday": ["Meeting", "Free", "Free", "Break", "Free", "Free", "Research"],
-                "Friday": ["Free", "ECE3001", "Free", "Break", "ECE2002", "Free", "Free"]
+                "Monday": ["ECE3001", "ECE3001", "Free", "Lunch", "Free", "Free", "Meeting", "Free"],
+                "Tuesday": ["Free", "Free", "ECE3001", "Lunch", "ECE2002", "Free", "Free", "Free"],
+                "Wednesday": ["Free", "ECE2002", "Free", "Lunch", "Free", "ECE3001", "Free", "Free"],
+                "Thursday": ["Meeting", "Free", "Free", "Lunch", "Free", "Free", "Research", "Free"],
+                "Friday": ["Free", "ECE3001", "Free", "Lunch", "ECE2002", "Free", "Free", "Free"],
+                "Saturday": ["Free", "Free", "ECE3001", "Lunch", "Free", "Free", "Free", "Free"]
             }
         };
     }
@@ -649,7 +660,7 @@ function autoPopulateExtractedSchedule() {
     const dummySubjects = ["CSE2001", "MAT1011", "PHY1701", "ENG1901", "CSE3002"];
     days.forEach(day => {
         for(let i = 0; i < timeSlotsLabels.length; i++) {
-            if(i !== 3) {
+            if(i !== 3) { // Skip Lunch (index 3)
                 const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
                 if(input) input.value = (Math.random() > 0.4) ? "" : dummySubjects[Math.floor(Math.random() * dummySubjects.length)];
             }
@@ -666,8 +677,8 @@ function generateScheduleTable() {
         const tr = document.createElement('tr');
         let html = `<td><strong>${day}</strong></td>`;
         for(let i=0; i < timeSlotsLabels.length; i++) {
-            if(i === 3) {
-                html += `<td><input type="text" value="Break" class="slot-input" data-day="${day}" data-index="${i}" readonly style="background:#f1f5f9; border:none; color:#94a3b8;"></td>`;
+            if(i === 3) { // Index 3 is Lunch
+                html += `<td><input type="text" value="Lunch" class="slot-input" data-day="${day}" data-index="${i}" readonly style="background:#f1f5f9; border:none; color:#94a3b8;"></td>`;
             } else {
                 html += `<td><input type="text" placeholder="Free" class="slot-input" data-day="${day}" data-index="${i}"></td>`;
             }
@@ -839,7 +850,7 @@ function findMutualSlots() {
         const facultyDay = facultySchedule[day] || [];
 
         for(let i=0; i < timeSlotsLabels.length; i++) {
-            if(i === 3) continue; 
+            if(i === 3) continue; // Skip Lunch (index 3)
             
             const sStatus = studentDay[i] || "Free";
             const fStatus = facultyDay[i] || "Free";
@@ -878,3 +889,4 @@ function findMutualSlots() {
 </script>
 </body>
 </html>
+```
