@@ -1,1 +1,1 @@
-# Find my faculty
+# FindMyFaculty
