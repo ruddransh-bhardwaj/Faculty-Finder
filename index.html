@@ -30,6 +30,7 @@ nav{display:flex;gap:18px;align-items:center}nav a{text-decoration:none;color:#4
 button:hover{opacity:0.9;}
 .btn-danger{background:#dc2626;}
 .btn-success{background:#16a34a;}
+.btn-warning{background:#d97706;}
 
 /* Main Views */
 .view-section { display: none; }
@@ -105,6 +106,8 @@ td input:focus { border: 1px solid var(--p); background: #eff6ff; outline: none;
 .status-pending { background: #fef3c7; color: #92400e; }
 .status-approved { background: #dcfce7; color: #166534; }
 .status-rejected { background: #fee2e2; color: #991b1b; }
+.status-rescheduled { background: #e0f2fe; color: #0369a1; }
+.fac-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* Status Badges */
 .status-badge-inline { padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
@@ -114,6 +117,10 @@ td input:focus { border: 1px solid var(--p); background: #eff6ff; outline: none;
 
 .login-container { max-width: 400px; margin: 80px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
 .login-container h2 { text-align: center; margin-top: 0; color: var(--p); font-weight:800;}
+
+/* Reschedule Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; }
+.modal-content { background: #fff; padding: 25px; border-radius: 16px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
 
 @media(max-width:900px){.hero,.booking{grid-template-columns:1fr}.hero h1{font-size:40px}#mainAppHeader{flex-direction:column;gap:12px} .appt-card{flex-direction:column; align-items:flex-start; gap:10px;}}
 </style>
@@ -358,13 +365,27 @@ td input:focus { border: 1px solid var(--p); background: #eff6ff; outline: none;
     </section>
 </div>
 
+<!-- RESCHEDULE MODAL -->
+<div id="rescheduleModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:#1e3a8a;">🗓 Reschedule Appointment</h3>
+        <p style="font-size:14px; color:#64748b;">Select a new available time slot for this meeting:</p>
+        <input type="hidden" id="rescheduleApptId">
+        <label style="font-weight:bold; font-size:13px;">New Time Slot</label>
+        <select id="rescheduleSlotDropdown" style="margin-top:6px; margin-bottom:20px;"></select>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn-danger" onclick="closeRescheduleModal()" style="background:#64748b;">Cancel</button>
+            <button class="btn-success" onclick="confirmReschedule()">Save New Time</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // --- GLOBAL VARS & EXACT FFCS SLOT CODES MATRIX ---
 let currentUser = null; 
 const timeSlotsLabels = ["08:30 - 10:00", "10:05 - 11:35", "11:40 - 01:10", "Lunch", "01:15 - 02:45", "02:50 - 04:20", "04:25 - 05:55", "06:00 - 07:30"];
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-// Exact representation of Slot names for the UI Display
 const slotNamesGrid = {
     "Monday":    ["A11 / L1", "A12 / L2", "A13 / L3", "Lunch", "A21 / L31", "A22 / L32", "A23 / L33", "A24 / L34"],
     "Tuesday":   ["B11 / L7", "B12 / L8", "B13 / L9", "Lunch", "B21 / L37", "B22 / L38", "B23 / L39", "B24 / L40"],
@@ -388,7 +409,6 @@ function initMockDB() {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB'));
     if (!db) { db = { appointments: [] }; }
     
-    // Sample Faculty Pre-fed data
     if (!db['EMP001']) {
         db['EMP001'] = {
             id: 'EMP001', name: 'Dr. Anjali Sharma', role: 'Faculty', dept: 'Computer Science', 
@@ -525,8 +545,8 @@ function renderAppointments() {
         }
 
         myApps.slice().reverse().forEach(app => {
-            let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            let dlBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
+            let badgeClass = app.status === 'Pending' ? 'status-pending' : (app.status === 'Approved' ? 'status-approved' : (app.status === 'Rescheduled' ? 'status-rescheduled' : 'status-rejected'));
+            let dlBtn = (app.status === 'Approved' || app.status === 'Rescheduled') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px; margin-left:8px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
 
             container.innerHTML += `
                 <div class="appt-card">
@@ -562,6 +582,7 @@ function renderAppointments() {
                         </div>
                         <div class="fac-actions">
                             <button class="btn-success" onclick="updateApptStatus('${app.id}', 'Approved')">Accept</button>
+                            <button class="btn-warning" onclick="openRescheduleModal('${app.id}')">Reschedule</button>
                             <button class="btn-danger" onclick="updateApptStatus('${app.id}', 'Rejected')">Decline</button>
                         </div>
                     </div>`;
@@ -571,18 +592,17 @@ function renderAppointments() {
         if (scheduledApps.length === 0) scheduledContainer.innerHTML = '<p style="color:#64748b; font-size:14px;">No scheduled meetings yet.</p>';
         else {
             scheduledApps.slice().reverse().forEach(app => {
-                let badgeClass = (app.status === 'Approved') ? 'status-approved' : 'status-rejected';
-                let calBtn = (app.status === 'Approved') ? `<button class="btn-primary" style="font-size:12px; padding:5px 10px;" onclick="exportApptICS('${app.id}')">📅 Add to Cal</button>` : '';
-
+                let badgeClass = app.status === 'Approved' ? 'status-approved' : (app.status === 'Rescheduled' ? 'status-rescheduled' : 'status-rejected');
                 scheduledContainer.innerHTML += `
-                    <div class="appt-card" style="border-left-color: ${app.status === 'Approved' ? '#16a34a' : '#dc2626'};">
+                    <div class="appt-card">
                         <div class="appt-info">
-                            <h4>Meeting with ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
-                            <p><strong>Scheduled:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
+                            <h4>Student: ${escapeHTML(app.studentName)} (${escapeHTML(app.studentId)})</h4>
+                            <p><strong>Slot:</strong> 🕒 ${escapeHTML(app.timeSlot)}</p>
                             <p><strong>Topic:</strong> ${escapeHTML(app.purpose)}</p>
                         </div>
-                        <div style="display:flex; align-items:center;">
-                            <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>${calBtn}
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="badge-status ${badgeClass}">${escapeHTML(app.status)}</span>
+                            ${app.status !== 'Rejected' ? `<button class="btn-warning" style="font-size:12px; padding:6px 12px;" onclick="openRescheduleModal('${app.id}')">Reschedule</button>` : ''}
                         </div>
                     </div>`;
             });
@@ -590,371 +610,347 @@ function renderAppointments() {
     }
 }
 
-function updateApptStatus(appId, newStatus) {
+// --- FACULTY RESCHEDULE LOGIC ---
+function openRescheduleModal(apptId) {
+    document.getElementById('rescheduleApptId').value = apptId;
+    let select = document.getElementById('rescheduleSlotDropdown');
+    select.innerHTML = '';
+
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    let index = db.appointments.findIndex(a => a.id === appId);
-    if(index > -1) {
-        db.appointments[index].status = newStatus;
-        localStorage.setItem('facultyFinderDB', JSON.stringify(db));
-        renderAppointments(); 
+    let fac = db[currentUser.id] || {};
+    let facSched = fac.schedule || {};
+
+    days.forEach(day => {
+        for (let i = 0; i < 8; i++) {
+            if (i === 3) continue;
+            let isBusy = facSched[day] && (facSched[day][i] === 'BUSY' || facSched[day][i] === 'CLASS');
+            if (!isBusy) {
+                let label = `${day} | ${timeSlotsLabels[i]} (${slotNamesGrid[day][i]})`;
+                select.innerHTML += `<option value="${label}">${label}</option>`;
+            }
+        }
+    });
+
+    document.getElementById('rescheduleModal').style.display = 'flex';
+}
+
+function closeRescheduleModal() {
+    document.getElementById('rescheduleModal').style.display = 'none';
+}
+
+function confirmReschedule() {
+    let apptId = document.getElementById('rescheduleApptId').value;
+    let newSlot = document.getElementById('rescheduleSlotDropdown').value;
+
+    if (!newSlot) {
+        alert("Please select a valid new slot.");
+        return;
+    }
+
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    if (db.appointments) {
+        let app = db.appointments.find(a => a.id === apptId);
+        if (app) {
+            app.timeSlot = newSlot;
+            app.status = 'Rescheduled';
+            localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+            closeRescheduleModal();
+            renderAppointments();
+            alert("Appointment successfully rescheduled!");
+        }
     }
 }
 
-function exportApptICS(appId) {
+function updateApptStatus(apptId, status) {
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    let app = db.appointments.find(a => a.id === appId);
-    if(!app) return;
-
-    const icsData = [
-        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Find My Faculty//EN", "BEGIN:VEVENT",
-        `SUMMARY:Academic Meeting - ${app.purpose}`,
-        `DESCRIPTION:Meeting between ${app.studentName} and ${app.facultyName}. Slot: ${app.timeSlot}`,
-        "STATUS:CONFIRMED", "END:VEVENT", "END:VCALENDAR"
-    ].join("\r\n");
-
-    const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', `appointment_${app.id}.ics`);
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    if (db.appointments) {
+        let app = db.appointments.find(a => a.id === apptId);
+        if (app) {
+            app.status = status;
+            localStorage.setItem('facultyFinderDB', JSON.stringify(db));
+            renderAppointments();
+        }
+    }
 }
 
-// --- GENERATE SCHEDULE MATRIX WITH FFCS SLOT NAMES ---
+function exportApptICS(apptId) {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    let app = (db.appointments || []).find(a => a.id === apptId);
+    if (!app) return;
+
+    let icsData = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Faculty Finder//EN\nBEGIN:VEVENT\nSUMMARY:Meeting with ${app.facultyName}\nDESCRIPTION:Purpose: ${app.purpose}\nEND:VEVENT\nEND:VCALENDAR`;
+    let blob = new Blob([icsData], { type: 'text/calendar' });
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `appointment-${apptId}.ics`;
+    a.click();
+}
+
+// --- MATRIX & SCHEDULE UI ---
 function generateScheduleTable() {
-    const tbody = document.getElementById('scheduleBody');
-    if(!tbody) return;
-    tbody.innerHTML = ''; 
+    let tbody = document.getElementById('scheduleBody');
+    tbody.innerHTML = '';
+
     days.forEach(day => {
-        const tr = document.createElement('tr');
-        let html = `<td><strong>${day}</strong></td>`;
-        for(let i=0; i < timeSlotsLabels.length; i++) {
-            if(i === 3) {
-                html += `<td><div class="slot-cell" style="justify-content:center;"><input type="text" value="Lunch" readonly style="background:#f1f5f9; border:none; color:#94a3b8; font-weight:bold;"></div></td>`;
+        let tr = document.createElement('tr');
+        tr.innerHTML = `<td style="font-weight:bold; background:#f8fafc;">${day}</td>`;
+
+        for (let i = 0; i < 8; i++) {
+            if (i === 3) {
+                tr.innerHTML += `<td style="background:#f1f5f9; color:#94a3b8; font-size:12px; font-weight:bold;">LUNCH</td>`;
             } else {
-                const slotCodeLabel = slotNamesGrid[day][i];
-                html += `
+                let slotCode = slotNamesGrid[day][i];
+                tr.innerHTML += `
                     <td>
                         <div class="slot-cell">
-                            <span class="slot-code-label" title="FFCS Code">${slotCodeLabel}</span>
-                            <input type="text" placeholder="Free" class="slot-input" data-day="${day}" data-index="${i}" oninput="handleInputChange(this)">
+                            <span class="slot-code-label">${slotCode}</span>
+                            <input type="text" id="slot_${day}_${i}" value="Free" onchange="styleSlotInput(this)">
                         </div>
                     </td>`;
             }
         }
-        tr.innerHTML = html;
         tbody.appendChild(tr);
     });
 }
 
-function handleInputChange(input) {
-    if (input.value.trim().toLowerCase() === "busy" || input.value.trim().toLowerCase().includes("busy")) {
+function styleSlotInput(input) {
+    let val = input.value.trim().toUpperCase();
+    if (val === 'BUSY' || val === 'CLASS') {
         input.classList.add('slot-busy');
     } else {
         input.classList.remove('slot-busy');
     }
 }
 
-// --- ROBUST FUZZY OCR FOR EXACT FFCS SLOTS ---
-async function processFFCSUpload(input) {
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-    const statusText = document.getElementById('uploadStatus');
-    statusText.style.display = 'block';
-    statusText.innerHTML = "⏳ Scanning FFCS Table Image...";
+function loadSchedule() {
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    let userData = db[currentUser.id] || {};
+    let sched = userData.schedule || {};
 
-    try {
-        const result = await Tesseract.recognize(file, 'eng', {
-            logger: m => {
-                if (m.status === 'recognizing text') {
-                    statusText.innerHTML = `⚙️ Matching Exact Slot Codes... ${Math.round(m.progress * 100)}%`;
-                }
+    days.forEach(day => {
+        let dayArr = sched[day] || ["Free", "Free", "Free", "Lunch", "Free", "Free", "Free", "Free"];
+        for (let i = 0; i < 8; i++) {
+            if (i === 3) continue;
+            let inp = document.getElementById(`slot_${day}_${i}`);
+            if (inp) {
+                inp.value = dayArr[i] || "Free";
+                styleSlotInput(inp);
             }
-        });
-
-        // 1. Clean OCR Output (Fuzzy Fixer)
-        // Convert "A ll" to "A11", "L|" to "L1", "O" to "0", remove spaces between letters and numbers.
-        let rawText = result.data.text.toUpperCase();
-        let cleanedText = rawText
-            .replace(/\|/g, '1')
-            .replace(/I/g, '1')
-            .replace(/O/g, '0')
-            .replace(/([A-Z])\s+(\d)/g, '$1$2'); // e.g. "A 11" -> "A11"
-            
-        console.log("Fuzzy Cleaned OCR Text:", cleanedText);
-
-        let matchCount = 0;
-        
-        // 2. Loop through our precise Grid and Match
-        days.forEach(day => {
-            for(let i=0; i < timeSlotsLabels.length; i++) {
-                if (i === 3) continue; // Lunch
-
-                // Get array of codes in this specific cell (e.g. ["A11", "L1"])
-                const cellCodes = slotNamesGrid[day][i].split(' / ').map(c => c.trim());
-                const inputEl = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-                
-                // If the cleaned image text contains ANY of the slot codes for this cell, mark it BUSY.
-                let isBooked = cellCodes.some(code => {
-                    // Match the exact code using word boundaries
-                    const regex = new RegExp(`\\b${code}\\b`);
-                    return regex.test(cleanedText);
-                });
-
-                if (isBooked && inputEl) {
-                    inputEl.value = "BUSY";
-                    inputEl.classList.add('slot-busy');
-                    matchCount++;
-                } else if (inputEl) {
-                    inputEl.value = "";
-                    inputEl.classList.remove('slot-busy');
-                }
-            }
-        });
-
-        if(matchCount === 0) {
-            statusText.innerHTML = `⚠️ No slot codes found. Please verify image clarity.`;
-        } else {
-            statusText.innerHTML = `✅ Complete! Exactly ${matchCount} FFCS Slots Matched.`;
         }
-        
-        setTimeout(() => { statusText.style.display = 'none'; input.value = ''; }, 3500);
-        saveSchedule();
-
-    } catch (err) {
-        console.error("OCR Error:", err);
-        statusText.innerHTML = "❌ Error reading image. Please upload a clear FFCS screenshot.";
-    }
+    });
 }
 
 function saveSchedule() {
-    if(!currentUser) return;
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    let mySchedule = {};
-    
+    if (!db[currentUser.id]) {
+        db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
+    }
+
+    let sched = {};
     days.forEach(day => {
-        mySchedule[day] = [];
-        for(let i=0; i < timeSlotsLabels.length; i++) {
-            const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-            let val = input ? input.value.trim() : "";
-            if(val === "") val = "Free"; 
-            mySchedule[day].push(val);
+        sched[day] = [];
+        for (let i = 0; i < 8; i++) {
+            if (i === 3) {
+                sched[day].push("Lunch");
+            } else {
+                let inp = document.getElementById(`slot_${day}_${i}`);
+                sched[day].push(inp ? inp.value.trim() : "Free");
+            }
         }
     });
 
-    if(!db[currentUser.id]) db[currentUser.id] = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
-    db[currentUser.id].schedule = mySchedule;
+    db[currentUser.id].schedule = sched;
     localStorage.setItem('facultyFinderDB', JSON.stringify(db));
-    
-    const resultDiv = document.getElementById('saveResult');
-    if(resultDiv) {
-        resultDiv.style.display = 'block';
-        setTimeout(() => resultDiv.style.display = 'none', 3000);
-    }
-}
 
-function loadSchedule() {
-    if(!currentUser) return;
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    if(db[currentUser.id] && db[currentUser.id].schedule) {
-        const mySchedule = db[currentUser.id].schedule;
-        days.forEach(day => {
-            for(let i=0; i < timeSlotsLabels.length; i++) {
-                if(i !== 3 && mySchedule[day] && mySchedule[day][i]) { 
-                    const input = document.querySelector(`.slot-input[data-day="${day}"][data-index="${i}"]`);
-                    if(input) {
-                        const val = mySchedule[day][i];
-                        input.value = (val.toLowerCase() === "free") ? "" : val;
-                        if(val.toLowerCase().includes("busy")) input.classList.add('slot-busy');
-                    }
-                }
-            }
-        });
-    }
+    let res = document.getElementById('saveResult');
+    res.style.display = 'block';
+    setTimeout(() => { res.style.display = 'none'; }, 2500);
 }
 
 function clearSchedule() {
-    if (confirm("Are you sure you want to completely reset your schedule matrix?")) {
-        document.querySelectorAll('.slot-input:not([readonly])').forEach(input => {
-            input.value = '';
-            input.classList.remove('slot-busy');
-        });
-        saveSchedule();
-    }
-}
-
-// --- SEARCH & SMART BOOKING ALGORITHM ---
-function searchFaculty() {
-    const query = document.getElementById('searchInput').value.toLowerCase().trim();
-    const resultsContainer = document.getElementById('searchResults');
-    if(!resultsContainer) return;
-    resultsContainer.innerHTML = '';
-    
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    let matches = [];
-    
-    for(let key in db) {
-        if(key !== 'appointments' && db[key] && db[key].role === 'Faculty') {
-            const fac = db[key];
-            const nameMatch = fac.name && fac.name.toLowerCase().includes(query);
-            const deptMatch = fac.dept && fac.dept.toLowerCase().includes(query);
-            const roomMatch = fac.cabin && fac.cabin.toLowerCase().includes(query);
-            const idMatch = fac.id && fac.id.toLowerCase().includes(query);
-
-            if(query === '' || nameMatch || deptMatch || roomMatch || idMatch) matches.push(fac);
+    days.forEach(day => {
+        for (let i = 0; i < 8; i++) {
+            if (i === 3) continue;
+            let inp = document.getElementById(`slot_${day}_${i}`);
+            if (inp) {
+                inp.value = "Free";
+                styleSlotInput(inp);
+            }
         }
-    }
-
-    if (matches.length === 0) {
-        resultsContainer.innerHTML = '<p class="no-results">No faculty found matching that query.</p>';
-        return;
-    }
-
-    matches.forEach(teacher => {
-        const isAvailable = (teacher.status === 'Available');
-        const liveLocDisplay = isAvailable ? `${teacher.cabin || 'Cabin'} (Available)` : `${teacher.location || 'Block A • Room 204'} (In Class)`;
-        const badgeClass = isAvailable ? 'badge-available' : 'badge-inclass';
-        const badgeText = isAvailable ? '🟢 Available' : '🔴 In Class';
-
-        const card = document.createElement('div');
-        card.className = 'card profile';
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <h3 style="margin-top: 0; color:#0f172a;">👩‍🏫 ${escapeHTML(teacher.name)}</h3>
-                <span class="status-badge-inline ${badgeClass}">${badgeText}</span>
-            </div>
-            <p style="margin: 4px 0; font-size: 13px; color:#475569;"><strong>ID:</strong> ${escapeHTML(teacher.id)}</p>
-            <p style="margin: 4px 0; font-size: 13px; color:#475569;"><strong>Dept:</strong> ${escapeHTML(teacher.dept || 'Academic')}</p>
-            
-            <div class="location-tag">
-                📍 <strong>Live Location:</strong> ${escapeHTML(liveLocDisplay)}
-            </div>
-
-            <button style="margin-top:10px; width:100%; padding:10px;" onclick="fillFaculty('${escapeHTML(teacher.name)}', '${escapeHTML(teacher.id)}', '${escapeHTML(liveLocDisplay)}')">Select for Booking</button>
-        `;
-        resultsContainer.appendChild(card);
     });
 }
 
-function handleSearch(event) { if (event.key === 'Enter') searchFaculty(); }
-function scrollToSearch(){ document.getElementById('faculty').scrollIntoView({behavior:'smooth'}); }
-function scrollToBook(){ document.getElementById('booking').scrollIntoView({behavior:'smooth'}); }
-
-function fillFaculty(name, id, liveLoc){
-    document.getElementById('facultyName').value = name;
-    document.getElementById('facultyId').value = id;
-    
-    document.getElementById('selectedFacultyLocationText').textContent = liveLoc || 'Cabin';
-    document.getElementById('selectedFacultyLocationBox').style.display = 'block';
-
-    document.getElementById('findSlotBtn').style.display = 'block';
-    document.getElementById('smartMatchBox').style.display = 'none'; 
-    document.getElementById('timeSlotDropdown').innerHTML = '<option value="">-- Click Run Smart FFCS Match --</option>';
-    scrollToBook();
+// --- SEARCH & MATCHING ---
+function scrollToSearch() {
+    document.getElementById('faculty').scrollIntoView({ behavior: 'smooth' });
 }
 
-function isFree(statusStr) {
-    if (!statusStr) return true;
-    const clean = statusStr.toString().trim().toLowerCase();
-    return clean === "free" || clean === "" || clean.includes("free");
+function handleSearch(e) {
+    if (e.key === 'Enter') searchFaculty();
+}
+
+function searchFaculty() {
+    let query = document.getElementById('searchInput').value.toLowerCase().trim();
+    let container = document.getElementById('searchResults');
+    container.innerHTML = '';
+
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    let results = Object.values(db).filter(u => 
+        u.role === 'Faculty' && 
+        (u.name.toLowerCase().includes(query) || 
+         (u.dept && u.dept.toLowerCase().includes(query)) || 
+         (u.cabin && u.cabin.toLowerCase().includes(query)) ||
+         u.id.toLowerCase().includes(query))
+    );
+
+    if (results.length === 0) {
+        container.innerHTML = '<p class="no-results">No faculty members found matching your search.</p>';
+        return;
+    }
+
+    results.forEach(fac => {
+        let isAvailable = fac.status === 'Available';
+        let badge = isAvailable ? '<span class="status-badge-inline badge-available">🟢 Available</span>' : '<span class="status-badge-inline badge-inclass">🔴 In Class</span>';
+
+        container.innerHTML += `
+            <div class="card">
+                ${badge}
+                <h3 style="margin:5px 0;">${escapeHTML(fac.name)}</h3>
+                <p style="color:#64748b; font-size:13px; margin:0 0 10px 0;">${escapeHTML(fac.dept || 'Department')} | ${escapeHTML(fac.id)}</p>
+                <p style="font-size:13px; margin:4px 0;">🏢 <strong>Cabin:</strong> ${escapeHTML(fac.cabin || 'N/A')}</p>
+                <p style="font-size:13px; margin:4px 0;">📍 <strong>Live:</strong> ${escapeHTML(fac.location || 'N/A')}</p>
+                <button onclick="selectFaculty('${fac.id}', '${escapeHTML(fac.name)}', '${escapeHTML(fac.location)}')" style="width:100%; margin-top:12px;">Select for Booking</button>
+            </div>`;
+    });
+}
+
+function selectFaculty(id, name, location) {
+    document.getElementById('facultyId').value = id;
+    document.getElementById('facultyName').value = name;
+    
+    let locBox = document.getElementById('selectedFacultyLocationBox');
+    document.getElementById('selectedFacultyLocationText').textContent = location || 'Cabin';
+    locBox.style.display = 'block';
+
+    document.getElementById('findSlotBtn').style.display = 'block';
+    document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
 }
 
 function findMutualSlots() {
-    if(!currentUser) { alert("⚠️ Session expired. Please log in again."); showView('portalView'); return; }
-    const facId = document.getElementById('facultyId').value;
-    if(!facId) { alert("Please select a faculty member first."); return; }
+    let facId = document.getElementById('facultyId').value;
+    if (!facId) return;
 
     let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
-    if(!db[currentUser.id] || !db[currentUser.id].schedule) {
-        alert("⚠️ Please go to your Dashboard and Save your FFCS schedule first!");
-        showView('dashboardView');
-        return;
-    }
+    let fac = db[facId];
+    let student = db[currentUser ? currentUser.id : ''];
 
-    const studentSchedule = db[currentUser.id].schedule || {};
-    const facultyObj = db[facId] || {};
-    const facultySchedule = facultyObj.schedule || {};
-    const appointments = db.appointments || [];
+    let facSched = fac ? fac.schedule : null;
+    let studentSched = student ? student.schedule : null;
 
-    const bookedSlots = new Set();
-    appointments.forEach(app => {
-        if(app.facultyId === facId && app.status === 'Approved') bookedSlots.add(app.timeSlot);
-    });
+    let dropdown = document.getElementById('timeSlotDropdown');
+    dropdown.innerHTML = '';
 
-    let mutualSlots = []; 
-    
+    let freeSlots = [];
+
     days.forEach(day => {
-        const studentDay = studentSchedule[day] || [];
-        const facultyDay = facultySchedule[day] || [];
+        for (let i = 0; i < 8; i++) {
+            if (i === 3) continue;
+            let fBusy = facSched && facSched[day] && (facSched[day][i] === 'BUSY' || facSched[day][i] === 'CLASS');
+            let sBusy = studentSched && studentSched[day] && (studentSched[day][i] === 'BUSY' || studentSched[day][i] === 'CLASS');
 
-        for(let i=0; i < timeSlotsLabels.length; i++) {
-            if(i === 3) continue; // Skip Lunch
-            
-            const sStatus = studentDay[i] || "Free";
-            const fStatus = facultyDay[i] || "Free";
-            const slotName = slotNamesGrid[day][i];
-            const slotLabel = `${day} | ${timeSlotsLabels[i]} (${slotName})`;
-
-            if(isFree(sStatus) && isFree(fStatus) && !bookedSlots.has(slotLabel)) {
-                mutualSlots.push(slotLabel);
+            if (!fBusy && !sBusy) {
+                let slotLabel = `${day} | ${timeSlotsLabels[i]} (${slotNamesGrid[day][i]})`;
+                freeSlots.push(slotLabel);
+                dropdown.innerHTML += `<option value="${slotLabel}">${slotLabel}</option>`;
             }
         }
     });
 
-    const dropdown = document.getElementById('timeSlotDropdown');
-    dropdown.innerHTML = ''; 
-    const matchBox = document.getElementById('smartMatchBox');
-    
-    if(mutualSlots.length === 0) {
+    let matchBox = document.getElementById('smartMatchBox');
+    let matchDetails = document.getElementById('matchDetails');
+
+    if (freeSlots.length > 0) {
         matchBox.style.display = 'block';
-        matchBox.style.borderColor = '#dc2626';
-        matchBox.style.backgroundColor = '#fef2f2';
-        document.getElementById('matchDetails').innerHTML = `<span style="color:#dc2626;">No mutual free slots found this week.</span>`;
-        dropdown.innerHTML = '<option value="">No overlapping time found</option>';
+        matchDetails.textContent = freeSlots[0];
     } else {
-        matchBox.style.display = 'block';
-        matchBox.style.borderColor = '#16a34a';
-        matchBox.style.backgroundColor = '#dcfce7';
-        document.getElementById('matchDetails').innerHTML = `Earliest Free Slot: 🕒 <span style="color:#15803d">${escapeHTML(mutualSlots[0])}</span>`;
-        
-        mutualSlots.forEach(slot => {
-            let opt = document.createElement('option');
-            opt.value = slot;
-            opt.textContent = slot;
-            dropdown.appendChild(opt);
-        });
+        matchBox.style.display = 'none';
+        dropdown.innerHTML = '<option value="">No mutual free slots found</option>';
     }
 }
 
 function bookAppointment() {
-    if (!currentUser) return;
-    const facName = document.getElementById('facultyName').value;
-    const facId = document.getElementById('facultyId').value;
-    const timeSlot = document.getElementById('timeSlotDropdown').value;
-    const purpose = document.getElementById('bookingPurpose').value;
-    const message = document.getElementById('bookingMessage').value;
+    let facId = document.getElementById('facultyId').value;
+    let facName = document.getElementById('facultyName').value;
+    let slot = document.getElementById('timeSlotDropdown').value;
+    let purpose = document.getElementById('bookingPurpose').value;
+    let message = document.getElementById('bookingMessage').value;
 
-    if (!facId || !timeSlot) { alert("Please select a faculty and valid mutual free slot."); return; }
+    if (!facId || !slot) {
+        alert("Please select a valid faculty and time slot.");
+        return;
+    }
 
-    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || {};
+    let db = JSON.parse(localStorage.getItem('facultyFinderDB')) || { appointments: [] };
     if (!db.appointments) db.appointments = [];
 
-    const newAppointment = {
-        id: 'APP_' + Date.now(),
-        studentId: currentUser.id,
-        studentName: currentUser.name,
+    let newAppt = {
+        id: 'APT' + Date.now(),
         facultyId: facId,
         facultyName: facName,
-        timeSlot: timeSlot,
+        studentId: currentUser.id,
+        studentName: currentUser.name,
+        timeSlot: slot,
         purpose: purpose,
         message: message,
         status: 'Pending'
     };
 
-    db.appointments.push(newAppointment);
+    db.appointments.push(newAppt);
     localStorage.setItem('facultyFinderDB', JSON.stringify(db));
 
-    alert("🎉 Appointment Request Submitted! Track it from your Dashboard.");
+    alert("Appointment requested successfully!");
     showView('dashboardView');
+}
+
+// --- FFCS OCR FILE UPLOAD ---
+function processFFCSUpload(input) {
+    if (!input.files || !input.files[0]) return;
+    let file = input.files[0];
+
+    let status = document.getElementById('uploadStatus');
+    status.style.display = 'block';
+    status.textContent = '🔍 Reading timetable image via OCR Engine...';
+
+    Tesseract.recognize(file, 'eng')
+        .then(({ data: { text } }) => {
+            status.textContent = '⚡ Matrix processed! Updating your table...';
+            let upperText = text.toUpperCase();
+
+            let matchesCount = 0;
+            days.forEach(day => {
+                slotNamesGrid[day].forEach((slotCodeCombined, index) => {
+                    if (index === 3) return;
+                    let codes = slotCodeCombined.split('/').map(c => c.trim());
+                    let isFound = codes.some(c => upperText.includes(c));
+
+                    if (isFound) {
+                        let inp = document.getElementById(`slot_${day}_${index}`);
+                        if (inp) {
+                            inp.value = "BUSY";
+                            styleSlotInput(inp);
+                            matchesCount++;
+                        }
+                    }
+                });
+            });
+
+            saveSchedule();
+            status.textContent = `✅ Complete! Found and marked ${matchesCount} busy slots.`;
+            setTimeout(() => { status.style.display = 'none'; }, 4000);
+        })
+        .catch(err => {
+            status.textContent = '❌ Failed to parse image. Please enter schedule manually.';
+        });
 }
 </script>
 </body>
