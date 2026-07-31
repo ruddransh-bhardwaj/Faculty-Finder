@@ -1,4 +1,4 @@
-# 🎓 Faculty Finder Pro (FFCS Edition)
+# 🎓 Find My Faculty (FFCS Edition)
 
 > **Eliminating the endless wait outside faculty cabins through Smart OCR Matrix Matching & Live Status Tracking.**
 
@@ -9,7 +9,7 @@
 In large universities (like VIT with the FFCS system), students often waste hours waiting outside faculty cabins because they don't know when the professor is free, or if they are currently in class. Manually cross-checking a student's timetable with a faculty's timetable to find a mutual free slot is tedious, error-prone, and frustrating.
 
 ## 🚀 The Solution
-**Faculty Finder Pro** is a smart academic scheduling portal. By utilizing advanced Client-Side OCR, the system automatically reads a screenshot of the student's/faculty's FFCS timetable, maps the exact slot codes (e.g., `A11`, `B12`, `L1`), and instantly algorithmically determines the absolute closest mutual free time for an appointment.
+**Find My Faculty** is a smart academic scheduling portal. By utilizing advanced Client-Side OCR, the system automatically reads a screenshot of the student's/faculty's FFCS timetable, maps the exact slot codes (e.g., `A11`, `B12`, `L1`), and instantly algorithmically determines the absolute closest mutual free time for an appointment.
 
 ## ✨ Key Features
 *   🤖 **Smart FFCS OCR Engine:** Upload a screenshot of your timetable. The system uses a Fuzzy Logic OCR Fixer (powered by Tesseract.js) to accurately extract standard slot codes and automatically populate your busy slots in a visual matrix.
