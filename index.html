@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Faculty Finder Pro - FFCS Edition</title>
+<title>Find My Faculty  - FFCS Edition</title>
 
 <!-- Tesseract.js OCR Engine -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -125,7 +125,7 @@ td input:focus { border: 1px solid var(--p); background: #eff6ff; outline: none;
     <div class="portal-centered">
         <div class="portal-container">
             <span class="portal-header-badge">FFCS Academic Scheduling</span>
-            <h1>Faculty Finder Pro</h1>
+            <h1>Find My Faculty</h1>
             <p>Select your portal to manage your exact FFCS slot availability or schedule mutual free appointments.</p>
             
             <div class="vit-cards-row">
@@ -606,7 +606,7 @@ function exportApptICS(appId) {
     if(!app) return;
 
     const icsData = [
-        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Faculty Finder Pro//EN", "BEGIN:VEVENT",
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Find My Faculty//EN", "BEGIN:VEVENT",
         `SUMMARY:Academic Meeting - ${app.purpose}`,
         `DESCRIPTION:Meeting between ${app.studentName} and ${app.facultyName}. Slot: ${app.timeSlot}`,
         "STATUS:CONFIRMED", "END:VEVENT", "END:VCALENDAR"
